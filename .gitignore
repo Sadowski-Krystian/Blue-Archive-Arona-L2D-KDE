@@ -1,0 +1,8 @@
+build/
+import_dir/
+.qt/
+.qmlls.ini
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+*.so
