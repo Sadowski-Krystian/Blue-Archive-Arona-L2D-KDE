@@ -29,6 +29,11 @@ public:
     QString animation() const { return m_animation; }
     void setAnimation(const QString &animationName);
 
+    // QML-accessible multi-track methods
+    Q_INVOKABLE void setTrackAnimation(int track, const QString &animationName, bool loop);
+    Q_INVOKABLE void addTrackAnimation(int track, const QString &animationName, bool loop, float delay);
+    Q_INVOKABLE void clearTrack(int track);
+
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) override;
 
 Q_SIGNALS:

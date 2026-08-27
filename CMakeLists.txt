@@ -81,3 +81,5 @@ install(FILES
 
 # Install the Plasma package (The QML frontend, assets, and metadata)
 plasma_install_package(package l2d.arona.plana.bluearchive wallpapers wallpaper)
+# Suppress strict compiler warnings coming from the third-party spine-cpp headers
+target_compile_options(BlueArchiveSpine PRIVATE -Wno-type-limits -Wno-suggest-override -Wno-deprecated-declarations)

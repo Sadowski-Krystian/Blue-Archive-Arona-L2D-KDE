@@ -4,28 +4,18 @@ import BlueArchiveSpine 1.0
 
 WallpaperItem {
     id: root
+    
+    property bool alerted: false
 
-    // Helper function to convert Qt file URLs to raw filesystem paths for C++
     function getLocalPath(url) {
         return url.toString().replace("file://", "");
     }
 
-    // Determine Day/Night based on system time (6:00 - 18:00 is Day)
     property int currentHour: new Date().getHours()
     property bool isDay: currentHour >= 6 && currentHour < 18
 
-    // Periodically update the time every minute
-    Timer {
-        interval: 60000
-        running: true
-        repeat: true
-        onTriggered: {
-            root.currentHour = new Date().getHours()
-        }
-    }
-
     // =========================================================
-    // Layer 1: Animated Spine Background
+    // Layer 1: Animated Spine Background (Handles Sleeping Arona)
     // =========================================================
     SpineItem {
         id: spineBackground
@@ -39,19 +29,59 @@ WallpaperItem {
             ? root.getLocalPath(Qt.resolvedUrl("../assets/arona_workpage_daytime.atlas"))
             : root.getLocalPath(Qt.resolvedUrl("../assets/arona_workpage_nighttime.atlas"))
 
-        animation: "Idle_background_00"
+        Component.onCompleted: {
+            // Track 0: Room environment
+            setTrackAnimation(0, "Idle_background_00", true)
+            // Track 1: Sleeping Arona
+            setTrackAnimation(1, "Idle_00", true) 
+        }
     }
 
     // =========================================================
-    // Layer 2: Animated Spine Character (Arona / Plana)
+    // Layer 2: Interactive Arona (Hidden while sleeping)
     // =========================================================
     SpineItem {
         id: spineCharacter
         anchors.fill: parent
+        opacity: root.alerted ? 1.0 : 0.0 // Hide when sleeping
+        
+        // Disable processing when invisible for performance
+        visible: opacity > 0
 
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/arona_spr.skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/arona_spr.atlas"))
+    }
 
-        animation: "Idle_01"
+    // =========================================================
+    // Layer 3: Interaction Area
+    // =========================================================
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            if (!root.alerted) {
+                // 1. Play the wake-up transition on the background layer
+                spineBackground.setTrackAnimation(2, "Idle_00_Touch_M", false)
+                spineBackground.setTrackAnimation(3, "Idle_00_Touch_A", false)
+                
+                // 2. Wait for her to wake up, then switch models
+                wakeTimer.start()
+            }
+        }
+    }
+
+    Timer {
+        id: wakeTimer
+        // Adjust this based on how long her wake animation takes (in ms)
+        interval: 2000 
+        onTriggered: {
+            // Clear the background Arona
+            spineBackground.clearTrack(1)
+            spineBackground.clearTrack(2)
+            spineBackground.clearTrack(3)
+            
+            // Show the main interactive Arona
+            root.alerted = true
+            spineCharacter.setTrackAnimation(0, "Idle_01", true)
+        }
     }
 }

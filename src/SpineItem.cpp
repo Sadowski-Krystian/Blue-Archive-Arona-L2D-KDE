@@ -83,6 +83,24 @@ void SpineItem::setAnimation(const QString &animationName) {
     Q_EMIT animationChanged();
 }
 
+void SpineItem::setTrackAnimation(int track, const QString &animationName, bool loop) {
+    if (m_animationState && !animationName.isEmpty()) {
+        m_animationState->setAnimation(track, spine::String(animationName.toUtf8().constData()), loop);
+    }
+}
+
+void SpineItem::addTrackAnimation(int track, const QString &animationName, bool loop, float delay) {
+    if (m_animationState && !animationName.isEmpty()) {
+        m_animationState->addAnimation(track, spine::String(animationName.toUtf8().constData()), loop, delay);
+    }
+}
+
+void SpineItem::clearTrack(int track) {
+    if (m_animationState) {
+        m_animationState->setEmptyAnimation(track, 0.0f);
+    }
+}
+
 void SpineItem::loadSkeleton() {
     if (m_skelSource.isEmpty() || m_atlasSource.isEmpty()) return;
 
