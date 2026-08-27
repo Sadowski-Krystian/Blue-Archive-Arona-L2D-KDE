@@ -6,13 +6,16 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
+#include <algorithm>
 
-// 1. Texture Loader Bridge (Fixed string concatenation)
+// 1. Texture Loader Bridge (Dynamic absolute paths)
 class QtTextureLoader : public spine::TextureLoader {
 public:
+    QString basePath;
+
     void load(spine::AtlasPage& page, const spine::String& path) override {
         QFileInfo info(QString::fromUtf8(path.buffer()));
-        QString fullPath = QString::fromUtf8("package/contents/assets/") + info.fileName();
+        QString fullPath = QDir(basePath).filePath(info.fileName());
         
         QImage* image = new QImage(fullPath);
         
@@ -88,6 +91,9 @@ void SpineItem::loadSkeleton() {
     delete m_skeletonData; m_skeletonData = nullptr;
     delete m_atlas; m_atlas = nullptr;
 
+    QFileInfo atlasInfo(m_atlasSource);
+    m_textureLoader->basePath = atlasInfo.path();
+
     spine::String atlasPath(m_atlasSource.toUtf8().constData());
     m_atlas = new spine::Atlas(atlasPath, m_textureLoader);
 
@@ -140,9 +146,19 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
         }
     }
 
+    // 1. Dynamic scale calculation to fit the 2880x1620 master canvas (PreserveAspectCrop)
+    float baseWidth = 2880.0f;
+    float baseHeight = 1620.0f;
+    float scale = std::max(static_cast<float>(width()) / baseWidth, static_cast<float>(height()) / baseHeight);
+    if (scale <= 0.0f) scale = 1.0f;
+
     QMatrix4x4 matrix;
-    matrix.translate(width() / 2.0, height() * 0.9);
-    matrix.scale(1.0, -1.0);
+    // 2. Center the origin within the visual viewport
+    matrix.translate(width() / 2.0f, height() / 2.0f);
+    // 3. Apply dynamic scaling and flip the Y axis for Qt's coordinate space
+    matrix.scale(scale, -scale);
+    // 4. Shift coordinate origin to center (0, 900) matching original JS setup
+    matrix.translate(0.0f, -900.0f);
     rootNode->setMatrix(matrix);
 
     auto& drawOrder = m_skeleton->getDrawOrder();

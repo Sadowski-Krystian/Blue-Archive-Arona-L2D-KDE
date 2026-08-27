@@ -1,0 +1,16 @@
+{
+    "KPlugin": {
+        "Id": "l2d.arona.plana.bluearchive",
+        "Name": "Blue Archive Interactive Arona Wallpaper L2D",
+        "Description": "An interactive Spine animated wallpaper of Arona and Plana.",
+        "Category": "Wallpaper",
+        "Version": "1.0",
+        "Authors": [
+            {
+                "Name": "Krystian Sadowski"
+            }
+        ]
+    },
+    "KPackageStructure": "Plasma/Wallpaper",
+    "X-Plasma-MainScript": "ui/main.qml"
+}
