@@ -6,3 +6,6 @@ CMakeCache.txt
 CMakeFiles/
 *.cmake
 *.so
+package/contents/ui/BlueArchiveSpine/*.so
+package/contents/ui/BlueArchiveSpine/qmldir
+package/contents/ui/BlueArchiveSpine/*.qmltypes

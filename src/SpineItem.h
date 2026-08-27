@@ -42,6 +42,7 @@ Q_SIGNALS:
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void itemChange(ItemChange change, const ItemChangeData &value) override;
 
 private Q_SLOTS:
     void updateAnimation();

@@ -23,7 +23,7 @@ public:
             qWarning() << "CRITICAL: Image not found at" << fullPath;
         }
 
-        page.setRendererObject(image); // 3.8 API
+        page.setRendererObject(image); 
         page.width = image->width();
         page.height = image->height();
     }
@@ -151,6 +151,13 @@ void SpineItem::geometryChange(const QRectF &newGeometry, const QRectF &oldGeome
     update();
 }
 
+void SpineItem::itemChange(ItemChange change, const ItemChangeData &value) {
+    QQuickItem::itemChange(change, value);
+    if (change == ItemVisibleHasChanged || change == ItemSceneChange) {
+        update();
+    }
+}
+
 QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
     if (!m_skeleton) return oldNode;
 
@@ -164,20 +171,24 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
         }
     }
 
-    // 1. Dynamic scale calculation to fit the 2880x1620 master canvas (PreserveAspectCrop)
     float baseWidth = 2880.0f;
     float baseHeight = 1620.0f;
-    float scale = std::max(static_cast<float>(width()) / baseWidth, static_cast<float>(height()) / baseHeight);
+    float itemW = static_cast<float>(width());
+    float itemH = static_cast<float>(height());
+    float scale = std::max(itemW / baseWidth, itemH / baseHeight);
     if (scale <= 0.0f) scale = 1.0f;
 
+    // qWarning() << "[SpineItem] paint: itemW=" << itemW << "itemH=" << itemH
+            //    << "scale=" << scale
+            //    << "windowSize=" << (window() ? window()->size() : QSize())
+            //    << "devicePixelRatio=" << (window() ? window()->devicePixelRatio() : 0.0);
+
     QMatrix4x4 matrix;
-    // 2. Center the origin within the visual viewport
-    matrix.translate(width() / 2.0f, height() / 2.0f);
-    // 3. Apply dynamic scaling and flip the Y axis for Qt's coordinate space
+    matrix.translate(itemW / 2.0f, itemH / 2.0f);
     matrix.scale(scale, -scale);
-    // 4. Shift coordinate origin to center (0, 900) matching original JS setup
     matrix.translate(0.0f, -900.0f);
     rootNode->setMatrix(matrix);
+
 
     auto& drawOrder = m_skeleton->getDrawOrder();
     for (size_t i = 0, n = drawOrder.size(); i < n; ++i) {
@@ -248,8 +259,14 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
 
         QSGTexture* texture = m_textures.value(image, nullptr);
         if (!texture) {
-            texture = window()->createTextureFromImage(*image);
+            texture = window()->createTextureFromImage(*image, QQuickWindow::TextureHasAlphaChannel);
+            texture->setFiltering(QSGTexture::Linear);
+            texture->setMipmapFiltering(QSGTexture::Linear);
+            texture->setHorizontalWrapMode(QSGTexture::ClampToEdge);
+            texture->setVerticalWrapMode(QSGTexture::ClampToEdge);
             m_textures.insert(image, texture);
+            // qWarning() << "[SpineItem] created texture, filtering=" << texture->filtering()
+                    // << "mipmap=" << texture->mipmapFiltering();
         }
 
         QSGTextureMaterial* material = new QSGTextureMaterial();

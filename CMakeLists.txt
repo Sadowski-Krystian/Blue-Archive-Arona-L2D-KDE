@@ -55,31 +55,28 @@ qt_add_qml_module(BlueArchiveSpine
 set_target_properties(BlueArchiveSpineplugin PROPERTIES PREFIX "lib")
 set_target_properties(BlueArchiveSpineplugin PROPERTIES INSTALL_RPATH "$ORIGIN")
 
-# Add the Spine include path so SpineItem.cpp can find <spine/spine.h>
-
 target_include_directories(BlueArchiveSpine PRIVATE "${SPINE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-# Link against Qt6 Quick (for Scene Graph rendering) and Multimedia
-
 target_link_libraries(BlueArchiveSpine PRIVATE Qt6::Core Qt6::Gui Qt6::Quick Qt6::Multimedia)
-# ==========================================
-# 3. Installation Rules
-# ==========================================
-# Install the QML Plugin, generated qmldir, and typeinfo to the system
 
-# 1. Install the main backing library and the auto-generated plugin target
-install(TARGETS BlueArchiveSpine BlueArchiveSpineplugin
-    LIBRARY DESTINATION ${KDE_INSTALL_QMLDIR}/BlueArchiveSpine
+# ==========================================
+# 3. Ship the QML plugin INSIDE the Plasma package (self-contained).
+# No system QML install path or env vars required for end users.
+# ==========================================
+set(BA_SPINE_PKG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/package/contents/ui/BlueArchiveSpine")
+
+add_custom_command(TARGET BlueArchiveSpineplugin POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${BA_SPINE_PKG_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_FILE:BlueArchiveSpineplugin>"
+        "${BA_SPINE_PKG_DIR}/"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/qml/BlueArchiveSpine/qmldir"
+        "${BA_SPINE_PKG_DIR}/"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/qml/BlueArchiveSpine/BlueArchiveSpine.qmltypes"
+        "${BA_SPINE_PKG_DIR}/"
+    COMMENT "Copying BlueArchiveSpine plugin into the Plasma package (self-contained)"
 )
 
-# 2. Install the QML metadata files (qmldir and .qmltypes)
-install(FILES 
-    "${CMAKE_BINARY_DIR}/qml/BlueArchiveSpine/qmldir"
-    "${CMAKE_BINARY_DIR}/qml/BlueArchiveSpine/BlueArchiveSpine.qmltypes"
-    DESTINATION ${KDE_INSTALL_QMLDIR}/BlueArchiveSpine
-)
-
-# Install the Plasma package (The QML frontend, assets, and metadata)
 plasma_install_package(package l2d.arona.plana.bluearchive wallpapers wallpaper)
-# Suppress strict compiler warnings coming from the third-party spine-cpp headers
 target_compile_options(BlueArchiveSpine PRIVATE -Wno-type-limits -Wno-suggest-override -Wno-deprecated-declarations)
