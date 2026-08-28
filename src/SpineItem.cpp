@@ -17,11 +17,16 @@ public:
         QFileInfo info(QString::fromUtf8(path.buffer()));
         QString fullPath = QDir(basePath).filePath(info.fileName());
         
-        QImage* image = new QImage(fullPath);
-        
-        if (image->isNull()) {
+                        // SpineItem.cpp - wewnątrz QtTextureLoader::load
+        QImage loadedImage(fullPath);
+        if (loadedImage.isNull()) {
             qWarning() << "CRITICAL: Image not found at" << fullPath;
         }
+
+        // Konwersja do pre-multiplied alpha poprawia mieszanie krawędzi (brak czarnych obwódek)
+        QImage* image = new QImage(loadedImage.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+
+
 
         page.setRendererObject(image); 
         page.width = image->width();
@@ -259,19 +264,24 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
 
         QSGTexture* texture = m_textures.value(image, nullptr);
         if (!texture) {
-            texture = window()->createTextureFromImage(*image, QQuickWindow::TextureHasAlphaChannel);
+            // Rzutowanie bitowego OR na właściwy enum dla QFlags w Qt 6:
+            auto flags = static_cast<QQuickWindow::CreateTextureOption>(
+                QQuickWindow::TextureHasAlphaChannel | QQuickWindow::TextureHasMipmaps
+            );
+
+            texture = window()->createTextureFromImage(*image, flags);
             texture->setFiltering(QSGTexture::Linear);
             texture->setMipmapFiltering(QSGTexture::Linear);
             texture->setHorizontalWrapMode(QSGTexture::ClampToEdge);
             texture->setVerticalWrapMode(QSGTexture::ClampToEdge);
             m_textures.insert(image, texture);
-            // qWarning() << "[SpineItem] created texture, filtering=" << texture->filtering()
-                    // << "mipmap=" << texture->mipmapFiltering();
         }
 
         QSGTextureMaterial* material = new QSGTextureMaterial();
         material->setTexture(texture);
         material->setFlag(QSGMaterial::Blending, true); 
+
+        material->setFiltering(QSGTexture::Linear);
         
         node->setMaterial(material);
         node->setFlag(QSGNode::OwnsMaterial);

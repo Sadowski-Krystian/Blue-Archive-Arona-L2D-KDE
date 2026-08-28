@@ -44,9 +44,9 @@ WallpaperItem {
             setTrackAnimation(1, "Idle_00", true) 
         }
 
-        layer.enabled: true
-        layer.smooth: true
-        layer.textureSize: Qt.size(width * root.ssFactor, height * root.ssFactor)
+    //    layer.enabled: true
+    //    layer.smooth: true
+    //    layer.textureSize: Qt.size(width * root.ssFactor, height * root.ssFactor)
     }
 
     // =========================================================
@@ -62,9 +62,9 @@ WallpaperItem {
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/arona_spr.skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/arona_spr.atlas"))
 
-        layer.enabled: true
-        layer.smooth: true
-        layer.textureSize: Qt.size(width * root.ssFactor, height * root.ssFactor)
+    //    layer.enabled: true
+    //    layer.smooth: true
+    //    layer.textureSize: Qt.size(width * root.ssFactor, height * root.ssFactor)
     }
 
     // =========================================================
