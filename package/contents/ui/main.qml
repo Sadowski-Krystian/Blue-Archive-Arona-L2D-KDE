@@ -7,7 +7,6 @@ WallpaperItem {
     
     property bool alerted: false
 
-
     readonly property int maxTextureDim: 4096
     readonly property real ssFactor: {
         var factor = 2.0
@@ -23,6 +22,9 @@ WallpaperItem {
 
     property int currentHour: new Date().getHours()
     property bool isDay: currentHour >= 6 && currentHour < 18
+    
+    // Pick a random sleep state (0-2 for day, 0-3 for night) matching original JS
+    property int startState: Math.floor(Math.random() * (isDay ? 3 : 4))
 
     // =========================================================
     // Layer 1: Animated Spine Background
@@ -41,12 +43,9 @@ WallpaperItem {
 
         Component.onCompleted: {
             setTrackAnimation(0, "Idle_background_00", true)
-            setTrackAnimation(1, "Idle_00", true) 
+            // Play the randomly selected sleeping animation
+            setTrackAnimation(1, "Idle_0" + root.startState, true) 
         }
-
-    //    layer.enabled: true
-    //    layer.smooth: true
-    //    layer.textureSize: Qt.size(width * root.ssFactor, height * root.ssFactor)
     }
 
     // =========================================================
@@ -61,10 +60,6 @@ WallpaperItem {
 
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/arona_spr.skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/arona_spr.atlas"))
-
-    //    layer.enabled: true
-    //    layer.smooth: true
-    //    layer.textureSize: Qt.size(width * root.ssFactor, height * root.ssFactor)
     }
 
     // =========================================================
@@ -73,9 +68,13 @@ WallpaperItem {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            if (!root.alerted) {
-                spineBackground.setTrackAnimation(2, "Idle_00_Touch_M", false)
-                spineBackground.setTrackAnimation(3, "Idle_00_Touch_A", false)
+            // Block spam clicks if already alerted or if currently waking up
+            if (!root.alerted && !wakeTimer.running) {
+                // Play the matching Touch transition for whatever sleep state she was in
+                spineBackground.setTrackAnimation(2, "Idle_0" + root.startState + "_Touch_M", false)
+                spineBackground.setTrackAnimation(3, "Idle_0" + root.startState + "_Touch_A", false)
+                
+                // Start the countdown to swap the characters
                 wakeTimer.start()
             }
         }
@@ -85,10 +84,12 @@ WallpaperItem {
         id: wakeTimer
         interval: 2000 
         onTriggered: {
+            // Clear the sleep and wake transition tracks
             spineBackground.clearTrack(1)
             spineBackground.clearTrack(2)
             spineBackground.clearTrack(3)
             
+            // Show the main character and play her standard idle
             root.alerted = true
             spineCharacter.setTrackAnimation(0, "Idle_01", true)
         }
