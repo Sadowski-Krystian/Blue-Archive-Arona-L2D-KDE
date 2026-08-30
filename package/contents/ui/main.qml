@@ -72,9 +72,17 @@ WallpaperItem {
         anchors.fill: parent
         onClicked: {
             if (!root.alerted && !wakeTimer.running) {
+                // 1. Waking up from sleep
                 spineBackground.setTrackAnimation(2, "Idle_0" + root.startState + "_Touch_M", false)
                 spineBackground.setTrackAnimation(3, "Idle_0" + root.startState + "_Touch_A", false)
                 wakeTimer.start()
+            } 
+            else if (root.alerted) {
+                // 2. Already awake: Reset inactivity timer on click
+                sleepTimer.restart()
+                
+                // TODO later: You can play an interaction animation here!
+                // spineCharacter.setTrackAnimation(1, "PatEnd_01_M", false)
             }
         }
     }
@@ -89,6 +97,29 @@ WallpaperItem {
             
             root.alerted = true
             spineCharacter.setTrackAnimation(0, "Idle_01", true)
+            
+            // Start the inactivity countdown once she is fully awake
+            sleepTimer.start()
+        }
+    }
+
+    Timer {
+        id: sleepTimer
+        interval: 300000 // 5 minutes (300,000 ms)
+        repeat: false
+        onTriggered: {
+            // Return to sleep state
+            root.alerted = false
+            
+            // Re-randomize sleep pose and restart background loop
+            root.startState = Math.floor(Math.random() * (root.isArona ? 3 : 4))
+            spineBackground.setTrackAnimation(0, "Idle_background_00", true)
+            spineBackground.setTrackAnimation(1, "Idle_0" + root.startState, true)
+            
+            // Clear awake character tracks
+            spineCharacter.clearTrack(0)
+            spineCharacter.clearTrack(1)
+            spineCharacter.clearTrack(2)
         }
     }
 }
