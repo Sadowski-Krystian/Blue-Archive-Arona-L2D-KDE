@@ -146,8 +146,17 @@ void SpineItem::updateAnimation() {
     float dt = m_timer.restart() / 1000.0f;
     m_animationState->update(dt);
     m_animationState->apply(*m_skeleton);
-    m_skeleton->updateWorldTransform();
 
+    // Inject manual QML bone coordinates before calculating world transforms
+    for (auto it = m_overriddenBones.constBegin(); it != m_overriddenBones.constEnd(); ++it) {
+        spine::Bone* bone = m_skeleton->findBone(spine::String(it.key().toUtf8().constData()));
+        if (bone) {
+            bone->setX(it.value().x());
+            bone->setY(it.value().y());
+        }
+    }
+
+    m_skeleton->updateWorldTransform();
     update();
 }
 
@@ -161,6 +170,23 @@ void SpineItem::itemChange(ItemChange change, const ItemChangeData &value) {
     if (change == ItemVisibleHasChanged || change == ItemSceneChange) {
         update();
     }
+}
+
+
+QPointF SpineItem::getBonePosition(const QString &boneName) {
+    if (m_skeleton) {
+        spine::Bone* bone = m_skeleton->findBone(spine::String(boneName.toUtf8().constData()));
+        if (bone) return QPointF(bone->getX(), bone->getY());
+    }
+    return QPointF(0, 0);
+}
+
+void SpineItem::setBonePosition(const QString &boneName, float x, float y) {
+    m_overriddenBones.insert(boneName, QPointF(x, y));
+}
+
+void SpineItem::clearBonePosition(const QString &boneName) {
+    m_overriddenBones.remove(boneName);
 }
 
 QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {

@@ -6,6 +6,7 @@
 #include <QtQml/qqmlregistration.h>
 #include <QMap>
 #include <QSGTexture>
+#include <QPointF>
 #include <spine/spine.h>
 
 class SpineItem : public QQuickItem {
@@ -29,10 +30,14 @@ public:
     QString animation() const { return m_animation; }
     void setAnimation(const QString &animationName);
 
-    // QML-accessible multi-track methods
     Q_INVOKABLE void setTrackAnimation(int track, const QString &animationName, bool loop);
     Q_INVOKABLE void addTrackAnimation(int track, const QString &animationName, bool loop, float delay);
     Q_INVOKABLE void clearTrack(int track);
+
+    // New Bone Manipulation Bridge
+    Q_INVOKABLE QPointF getBonePosition(const QString &boneName);
+    Q_INVOKABLE void setBonePosition(const QString &boneName, float x, float y);
+    Q_INVOKABLE void clearBonePosition(const QString &boneName);
 
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) override;
 
@@ -63,6 +68,6 @@ private:
     QElapsedTimer m_timer;
     class QtTextureLoader* m_textureLoader = nullptr;
     
-    // Cache for GPU textures so we don't leak memory
     QMap<void*, QSGTexture*> m_textures;
+    QMap<QString, QPointF> m_overriddenBones;
 };
