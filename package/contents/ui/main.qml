@@ -63,6 +63,12 @@ WallpaperItem {
 
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getSprName() + ".skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getSprName() + ".atlas"))
+
+        // Shifts the character model relative to the screen dimensions
+        transform: Translate {
+            x: -(root.width * 0.25)  // Matches the exact -720px left shift from the original JS
+            y: -(root.height * 0.20) // Shifts her slightly upward; adjust this decimal to tweak the height
+        }
     }
 
     // =========================================================
@@ -89,7 +95,7 @@ WallpaperItem {
 
     Timer {
         id: wakeTimer
-        interval: 2000 
+        interval: 700 
         onTriggered: {
             spineBackground.clearTrack(1)
             spineBackground.clearTrack(2)
