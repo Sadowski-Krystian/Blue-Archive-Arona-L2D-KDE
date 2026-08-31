@@ -63,23 +63,45 @@ WallpaperItem {
     }
 
     // --- Dialogue UI ---
+    FontLoader {
+        id: notoSans
+        source: "file://" + root.getLocalPath(Qt.resolvedUrl("../assets/font/NotoSans-Regular.ttf"))
+    }
+
     Rectangle {
         id: dialogBox
-        width: 450; height: 120
-        color: "#b3000000"
-        radius: 12
+        width: 300
+        height: dialogText.contentHeight + 20 
+        color: Qt.rgba(1, 1, 1, 0.87)
+        border.color: Qt.rgba(1, 1, 1, 0.9)
+        border.width: 1
+        radius: 10
+        
         x: (root.width * 0.35) 
         y: (root.height * 0.6)
         opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 300 } }
+        
+        // This single animation now controls the box, the text, and the shadow perfectly
+        Behavior on opacity { NumberAnimation { duration: 500 } }
+        
+        // CSS box-shadow nested as a child
+        Rectangle {
+            z: -1 // Forces it to render behind the white box
+            width: parent.width
+            height: parent.height
+            x: 5
+            y: 5
+            color: Qt.rgba(0, 0, 0, 0.26)
+            radius: 10
+        }
         
         Text {
             id: dialogText
             anchors.fill: parent
-            anchors.margins: 20
-            color: "white"
-            font.pixelSize: 22
-            font.bold: true
+            anchors.margins: 10 
+            color: "black" 
+            font.pixelSize: 24 
+            font.family: notoSans.name 
             wrapMode: Text.WordWrap
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
