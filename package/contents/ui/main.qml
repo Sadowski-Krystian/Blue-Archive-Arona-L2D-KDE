@@ -19,13 +19,16 @@ WallpaperItem {
     }
 
     property int startState: Math.floor(Math.random() * (isArona ? 3 : 4))
+    
+    // Set this to .mp3 or .ogg depending on your file formats
+    property string audioExt: ".ogg"
 
     function getLocalPath(url) { return url.toString().replace("file://", ""); }
     function getBgName() { return isArona ? "arona_workpage_daytime" : "arona_workpage_nighttime" }
     function getSprName() { return isArona ? "arona_spr" : "NP0035_spr" }
     function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
 
-    // --- Audio System ---
+    // --- Audio System & Database ---
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
     property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
 
@@ -37,33 +40,64 @@ WallpaperItem {
         }
     }
 
-    QtObject {
-        id: voiceData
-        property var aronaInteractText: ["Manage tasks you need to complete from here!", "Sensei! Pick a task. I'll back you up!", "Here's everything on your docket. Adults have it rough, huh?"]
-        property var aronaInteractFile: ["Arona/arona_work_talk_1", "Arona/arona_work_talk_2", "Arona/arona_work_talk_3"]
-        property var aronaInteractExpr: ["00", "25", "13"]
-
-        property var planaInteractText: ["You can carry out your various tasks here, Sensei.", "Sensei. Please select whatever task you wish to do.", "There are many tasks that need to be resolved. Now then, if you please."]
-        property var planaInteractFile: ["NP0035/NP0035_Work_Talk_1", "NP0035/NP0035_Work_Talk_2", "NP0035/NP0035_Work_Talk_3"]
-        property var planaInteractExpr: ["03", "03", "03"]
-        
-        property var aronaWakeText: ["Sensei! I've been waiting for you!", "Let's get to work!", "Any task you want to do in particular, sensei?"]
-        property var aronaWakeFile: ["Arona/arona_work_In_1", "Arona/arona_work_In_2", "Arona/arona_work_In_3"]
-        property var aronaWakeExpr: ["12", "25", "31"]
-
-        property var planaWakeText: ["Sensei, I've been waiting for you.", "It's time to get to work.", "Which task would you like to start with, Sensei?"]
-        property var planaWakeFile: ["NP0035/NP0035_Work_In_1_2", "NP0035/NP0035_Work_In_2", "NP0035/NP0035_Work_In_3"]
-        property var planaWakeExpr: ["03", "03", "00"]
+    // ALL PATHS LOWERCASE FOR LINUX CASE-SENSITIVITY
+    property var voiceDatabase: {
+        "arona": {
+            "idle": [
+                { t: ["Sensei, you're so...", "...Heeheehee.", "Zzz..."], f: ["Arona/arona_work_sleep_talk_1", "Arona/arona_work_sleep_talk_2", "Arona/arona_work_sleep_talk_3"] },
+                { t: ["I wonder what's out there...", "Hmm..."], f: ["Arona/arona_work_watch_talk_1", "Arona/arona_work_watch_talk_3"] },
+                { t: ["La, lala, lala! ♪", "Hmm hmm hmm... ♩"], f: ["Arona/arona_work_sit_talk_1", "Arona/arona_work_sit_talk_2"] }
+            ],
+            "exit": [
+                { t: ["Wh-wha...huh?", "Ah?!"], f: ["Arona/arona_work_sleep_exit_1", "Arona/arona_work_sleep_exit_2"] },
+                { t: ["Ah!", "Huh?"], f: ["Arona/arona_work_watch_exit_1", "Arona/arona_work_watch_exit_2"] },
+                { t: ["Eh?", "Huh?"], f: ["Arona/arona_work_sit_exit_1", "Arona/arona_work_sit_exit_2"] }
+            ],
+            "wake": {
+                t: ["Sensei! I've been waiting for you!", "Let's get to work!", "Any task you want to do in particular, sensei?"],
+                f: ["Arona/arona_work_in_1", "Arona/arona_work_in_2", "Arona/arona_work_in_3"],
+                e: ["12", "25", "31"]
+            },
+            "interact": {
+                t: ["Manage tasks you need to complete from here!", "Sensei! Pick a task. I'll back you up!", "Here's everything on your docket. Adults have it rough, huh?"],
+                f: ["Arona/arona_work_talk_1", "Arona/arona_work_talk_2", "Arona/arona_work_talk_3"],
+                e: ["00", "25", "13"]
+            }
+        },
+        "plana": {
+            "idle": [
+                { t: ["Hmm... I see.", "Hmm... So that's how it's structured."], f: ["NP0035/np0035_work_cabinet_talk_1", "NP0035/np0035_work_cabinet_talk_1"] },
+                { t: ["..."], f: ["NP0035/np0035_work_sit_talk_1"] },
+                { t: ["Would this be useful?", "Me too. Together."], f: ["NP0035/np0035_work_umbrella_talk_1", "NP0035/np0035_work_umbrella_talk_2"] },
+                { t: ["Mmm..."], f: ["NP0035/np0035_work_planawatchsky_talk_1_2"] }
+            ],
+            "exit": [
+                { t: ["...Ah."], f: ["NP0035/np0035_work_cabinet_exit_1"] },
+                { t: ["Ah."], f: ["NP0035/np0035_work_sit_exit_1"] },
+                { t: ["Ah."], f: ["NP0035/np0035_work_umbrella_exit_1"] },
+                { t: ["...Ah."], f: ["NP0035/np0035_work_planawatchsky_exit_1"] }
+            ],
+            "wake": {
+                t: ["Sensei, I've been waiting for you.", "It's time to get to work.", "Which task would you like to start with, Sensei?"],
+                f: ["NP0035/np0035_work_in_1_2", "NP0035/np0035_work_in_2", "NP0035/np0035_work_in_3"],
+                e: ["03", "03", "00"]
+            },
+            "interact": {
+                t: ["You can carry out your various tasks here, Sensei.", "Sensei. Please select whatever task you wish to do.", "There are many tasks that need to be resolved. Now then, if you please."],
+                f: ["NP0035/np0035_work_talk_1", "NP0035/np0035_work_talk_2", "NP0035/np0035_work_talk_3"],
+                e: ["03", "03", "03"]
+            }
+        }
     }
 
     function playVoice(file, text, expression) {
         if (root.audioEnabled) {
-            voicePlayer.source = "file://" + root.getLocalPath(Qt.resolvedUrl("../voice/" + file + ".mp3"))
+            voicePlayer.source = Qt.resolvedUrl("../voice/" + file + root.audioExt)
             voicePlayer.play()
         }
         dialogText.text = text
         dialogBox.opacity = 1
-        spineCharacter.setTrackAnimation(1, expression, true)
+        if (expression !== "") spineCharacter.setTrackAnimation(1, expression, true)
         voiceTimer.restart()
     }
 
@@ -155,6 +189,13 @@ WallpaperItem {
             root.curMouseX = mouse.x;  root.curMouseY = mouse.y;
 
             if (!root.alerted && !wakeTimer.running) {
+                // 1. Play startled/exit sequence
+                var charKey = root.isArona ? "arona" : "plana"
+                var stateData = root.voiceDatabase[charKey].exit[root.startState]
+                var idx = Math.floor(Math.random() * stateData.f.length)
+                
+                playVoice(stateData.f[idx], stateData.t[idx], "")
+
                 spineBackground.setTrackAnimation(2, "Idle_0" + root.startState + "_Touch_M", false)
                 spineBackground.setTrackAnimation(3, "Idle_0" + root.startState + "_Touch_A", false)
                 wakeTimer.start()
@@ -173,12 +214,10 @@ WallpaperItem {
                 } 
                 else if (relX > 0.15 && relX < 0.35 && relY >= 0.40 && relY < 0.80) {
                     root.mouseAction = 2 
-                    var idx = Math.floor(Math.random() * 3)
-                    if (root.isArona) {
-                        playVoice(voiceData.aronaInteractFile[idx], voiceData.aronaInteractText[idx], voiceData.aronaInteractExpr[idx])
-                    } else {
-                        playVoice(voiceData.planaInteractFile[idx], voiceData.planaInteractText[idx], voiceData.planaInteractExpr[idx])
-                    }
+                    var charKey = root.isArona ? "arona" : "plana"
+                    var actData = root.voiceDatabase[charKey].interact
+                    var idx = Math.floor(Math.random() * actData.f.length)
+                    playVoice(actData.f[idx], actData.t[idx], actData.e[idx])
                 } 
                 else {
                     root.mouseAction = 3 
@@ -198,15 +237,13 @@ WallpaperItem {
             root.curMouseY = mouse.y;
 
             if (root.mouseAction === 1) {
-                var HEADPAT_STEP = 5;
-                var HEADPAT_CLAMP = 30;
                 var midX = root.width * 0.25;
                 var midY = root.height * 0.3;
 
                 if ((mouse.y < midY && deltaY < 0) || (mouse.x >= midX && deltaX > 0)) {
-                    root.currentPat.y = root.clamp(root.currentPat.y - HEADPAT_STEP, root.patBase.y - HEADPAT_CLAMP, root.patBase.y + HEADPAT_CLAMP);
+                    root.currentPat.y = root.clamp(root.currentPat.y - 5, root.patBase.y - 30, root.patBase.y + 30);
                 } else if ((mouse.y >= midY && deltaY > 0) || (mouse.x < midX && deltaX < 0)) {
-                    root.currentPat.y = root.clamp(root.currentPat.y + HEADPAT_STEP, root.patBase.y - HEADPAT_CLAMP, root.patBase.y + HEADPAT_CLAMP);
+                    root.currentPat.y = root.clamp(root.currentPat.y + 5, root.patBase.y - 30, root.patBase.y + 30);
                 }
             }
         }
@@ -226,6 +263,22 @@ WallpaperItem {
 
     // --- Timers ---
     Timer {
+        id: idleVoiceTimer
+        interval: 15000 // 15 seconds
+        repeat: true
+        running: !root.alerted
+        onTriggered: {
+            // Do not overlap playing audio
+            if (voicePlayer.playbackState === MediaPlayer.PlayingState) return;
+
+            var charKey = root.isArona ? "arona" : "plana"
+            var stateData = root.voiceDatabase[charKey].idle[root.startState]
+            var idx = Math.floor(Math.random() * stateData.f.length)
+            playVoice(stateData.f[idx], stateData.t[idx], "")
+        }
+    }
+
+    Timer {
         id: wakeTimer
         interval: 2000 
         onTriggered: {
@@ -241,12 +294,11 @@ WallpaperItem {
             root.currentEye = root.eyeBase
             root.currentPat = root.patBase
             
-            var idx = Math.floor(Math.random() * 3)
-            if (root.isArona) {
-                playVoice(voiceData.aronaWakeFile[idx], voiceData.aronaWakeText[idx], voiceData.aronaWakeExpr[idx])
-            } else {
-                playVoice(voiceData.planaWakeFile[idx], voiceData.planaWakeText[idx], voiceData.planaWakeExpr[idx])
-            }
+            // 2. Play greeting/wake sequence
+            var charKey = root.isArona ? "arona" : "plana"
+            var wakeData = root.voiceDatabase[charKey].wake
+            var idx = Math.floor(Math.random() * wakeData.f.length)
+            playVoice(wakeData.f[idx], wakeData.t[idx], wakeData.e[idx])
             
             sleepTimer.start()
         }
@@ -257,7 +309,7 @@ WallpaperItem {
         interval: 4000 
         onTriggered: {
             dialogBox.opacity = 0
-            spineCharacter.setTrackAnimation(1, "00", true) 
+            if (root.alerted) spineCharacter.setTrackAnimation(1, "00", true) 
         }
     }
 
@@ -286,19 +338,15 @@ WallpaperItem {
             if (root.mouseAction === 3) {
                 var adjX = (root.curMouseX / root.width) - 0.25;
                 var adjY = (root.curMouseY / root.height) - 0.5;
-                
-                var EYE_CLAMP_X = 200;
-                var EYE_CLAMP_Y = 112.5; 
-                var EYE_STEP = 10;
 
                 var signX = adjX > 0 ? 1 : (adjX < 0 ? -1 : 0);
                 var signY = adjY > 0 ? 1 : (adjY < 0 ? -1 : 0);
                 
-                root.currentEye.y -= signX * EYE_STEP;
-                root.currentEye.x -= signY * EYE_STEP;
+                root.currentEye.y -= signX * 10;
+                root.currentEye.x -= signY * 10;
 
-                var limitY = Math.min(Math.abs(adjX) * EYE_CLAMP_X, EYE_CLAMP_X);
-                var limitX = Math.min(Math.abs(adjY) * EYE_CLAMP_Y, EYE_CLAMP_Y);
+                var limitY = Math.min(Math.abs(adjX) * 200, 200);
+                var limitX = Math.min(Math.abs(adjY) * 112.5, 112.5);
 
                 root.currentEye.y = root.clamp(root.currentEye.y, root.eyeBase.y - limitY, root.eyeBase.y + limitY);
                 root.currentEye.x = root.clamp(root.currentEye.x, root.eyeBase.x - limitX, root.eyeBase.x + limitX);
