@@ -1,5 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
+import QtMultimedia
 import org.kde.plasma.plasmoid
 import "BlueArchiveSpine"
 
@@ -22,22 +23,62 @@ WallpaperItem {
     function getLocalPath(url) { return url.toString().replace("file://", ""); }
     function getBgName() { return isArona ? "arona_workpage_daytime" : "arona_workpage_nighttime" }
     function getSprName() { return isArona ? "arona_spr" : "NP0035_spr" }
-    
     function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
 
+    // --- Audio System ---
+    property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
+    property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
+
+    MediaPlayer {
+        id: voicePlayer
+        audioOutput: AudioOutput {
+            volume: root.audioVolume
+            muted: !root.audioEnabled
+        }
+    }
+
+    QtObject {
+        id: voiceData
+        property var aronaInteractText: ["Manage tasks you need to complete from here!", "Sensei! Pick a task. I'll back you up!", "Here's everything on your docket. Adults have it rough, huh?"]
+        property var aronaInteractFile: ["Arona/arona_work_talk_1", "Arona/arona_work_talk_2", "Arona/arona_work_talk_3"]
+        property var aronaInteractExpr: ["00", "25", "13"]
+
+        property var planaInteractText: ["You can carry out your various tasks here, Sensei.", "Sensei. Please select whatever task you wish to do.", "There are many tasks that need to be resolved. Now then, if you please."]
+        property var planaInteractFile: ["NP0035/NP0035_Work_Talk_1", "NP0035/NP0035_Work_Talk_2", "NP0035/NP0035_Work_Talk_3"]
+        property var planaInteractExpr: ["03", "03", "03"]
+        
+        property var aronaWakeText: ["Sensei! I've been waiting for you!", "Let's get to work!", "Any task you want to do in particular, sensei?"]
+        property var aronaWakeFile: ["Arona/arona_work_In_1", "Arona/arona_work_In_2", "Arona/arona_work_In_3"]
+        property var aronaWakeExpr: ["12", "25", "31"]
+
+        property var planaWakeText: ["Sensei, I've been waiting for you.", "It's time to get to work.", "Which task would you like to start with, Sensei?"]
+        property var planaWakeFile: ["NP0035/NP0035_Work_In_1_2", "NP0035/NP0035_Work_In_2", "NP0035/NP0035_Work_In_3"]
+        property var planaWakeExpr: ["03", "03", "00"]
+    }
+
+    function playVoice(file, text, expression) {
+        if (root.audioEnabled) {
+            voicePlayer.source = "file://" + root.getLocalPath(Qt.resolvedUrl("../voice/" + file + ".mp3"))
+            voicePlayer.play()
+        }
+        dialogText.text = text
+        dialogBox.opacity = 1
+        spineCharacter.setTrackAnimation(1, expression, true)
+        voiceTimer.restart()
+    }
+
     // --- Bone Tracking States ---
-    property int mouseAction: -1 // 1: Pat, 2: Voice, 3: Look
+    property int mouseAction: -1 
     property point eyeBase: Qt.point(0, 0)
     property point patBase: Qt.point(0, 0)
     property point currentEye: Qt.point(0, 0)
     property point currentPat: Qt.point(0, 0)
-    
-    // Mouse deltas for tracking
     property real curMouseX: 0
     property real curMouseY: 0
     property real lastMouseX: 0
     property real lastMouseY: 0
 
+    // --- Render Layers ---
     SpineItem {
         id: spineBackground
         anchors.fill: parent
@@ -76,17 +117,13 @@ WallpaperItem {
         border.color: Qt.rgba(1, 1, 1, 0.9)
         border.width: 1
         radius: 10
-        
         x: (root.width * 0.35) 
         y: (root.height * 0.6)
         opacity: 0
-        
-        // This single animation now controls the box, the text, and the shadow perfectly
         Behavior on opacity { NumberAnimation { duration: 500 } }
         
-        // CSS box-shadow nested as a child
         Rectangle {
-            z: -1 // Forces it to render behind the white box
+            z: -1 
             width: parent.width
             height: parent.height
             x: 5
@@ -114,10 +151,8 @@ WallpaperItem {
         hoverEnabled: true
 
         onPressed: (mouse) => {
-            root.lastMouseX = mouse.x;
-            root.lastMouseY = mouse.y;
-            root.curMouseX = mouse.x;
-            root.curMouseY = mouse.y;
+            root.lastMouseX = mouse.x; root.lastMouseY = mouse.y;
+            root.curMouseX = mouse.x;  root.curMouseY = mouse.y;
 
             if (!root.alerted && !wakeTimer.running) {
                 spineBackground.setTrackAnimation(2, "Idle_0" + root.startState + "_Touch_M", false)
@@ -128,22 +163,22 @@ WallpaperItem {
             
             if (root.alerted) {
                 sleepTimer.restart()
-                
                 var relX = mouse.x / root.width
                 var relY = mouse.y / root.height
                 
                 if (relX > 0.15 && relX < 0.35 && relY > 0.20 && relY < 0.40) {
                     root.mouseAction = 1 
                     spineCharacter.setTrackAnimation(1, "Pat_01_M", false)
-                    spineCharacter.setTrackAnimation(2, "Pat_01_A", false)
+                    if (root.isArona) spineCharacter.setTrackAnimation(2, "Pat_01_A", false)
                 } 
                 else if (relX > 0.15 && relX < 0.35 && relY >= 0.40 && relY < 0.80) {
                     root.mouseAction = 2 
-                    dialogText.text = root.isArona ? "Sensei! Pick a task. I'll back you up!" : "Sensei. Please select whatever task you wish to do."
-                    dialogBox.opacity = 1
-                    
-                    spineCharacter.setTrackAnimation(1, root.isArona ? "25" : "03", true) 
-                    voiceTimer.start()
+                    var idx = Math.floor(Math.random() * 3)
+                    if (root.isArona) {
+                        playVoice(voiceData.aronaInteractFile[idx], voiceData.aronaInteractText[idx], voiceData.aronaInteractExpr[idx])
+                    } else {
+                        playVoice(voiceData.planaInteractFile[idx], voiceData.planaInteractText[idx], voiceData.planaInteractExpr[idx])
+                    }
                 } 
                 else {
                     root.mouseAction = 3 
@@ -168,7 +203,6 @@ WallpaperItem {
                 var midX = root.width * 0.25;
                 var midY = root.height * 0.3;
 
-                // Incremental bone movement mimicking JS delta physics
                 if ((mouse.y < midY && deltaY < 0) || (mouse.x >= midX && deltaX > 0)) {
                     root.currentPat.y = root.clamp(root.currentPat.y - HEADPAT_STEP, root.patBase.y - HEADPAT_CLAMP, root.patBase.y + HEADPAT_CLAMP);
                 } else if ((mouse.y >= midY && deltaY > 0) || (mouse.x < midX && deltaX < 0)) {
@@ -206,6 +240,13 @@ WallpaperItem {
             root.patBase = spineCharacter.getBonePosition("Touch_Point")
             root.currentEye = root.eyeBase
             root.currentPat = root.patBase
+            
+            var idx = Math.floor(Math.random() * 3)
+            if (root.isArona) {
+                playVoice(voiceData.aronaWakeFile[idx], voiceData.aronaWakeText[idx], voiceData.aronaWakeExpr[idx])
+            } else {
+                playVoice(voiceData.planaWakeFile[idx], voiceData.planaWakeText[idx], voiceData.planaWakeExpr[idx])
+            }
             
             sleepTimer.start()
         }
@@ -256,7 +297,6 @@ WallpaperItem {
                 root.currentEye.y -= signX * EYE_STEP;
                 root.currentEye.x -= signY * EYE_STEP;
 
-                // Strict hard cap limits to absolutely prevent multi-monitor tearing
                 var limitY = Math.min(Math.abs(adjX) * EYE_CLAMP_X, EYE_CLAMP_X);
                 var limitX = Math.min(Math.abs(adjY) * EYE_CLAMP_Y, EYE_CLAMP_Y);
 

@@ -8,5 +8,11 @@
     <entry name="characterMode" type="Int">
       <default>0</default>
     </entry>
+    <entry name="audioEnabled" type="Bool">
+      <default>true</default>
+    </entry>
+    <entry name="audioVolume" type="Int">
+      <default>50</default>
+    </entry>
   </group>
 </kcfg>
