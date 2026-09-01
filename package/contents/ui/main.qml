@@ -32,6 +32,10 @@ WallpaperItem {
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
     property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
 
+    Component.onCompleted: {
+        playSleepIn()
+    }
+
     MediaPlayer {
         id: voicePlayer
         audioOutput: AudioOutput {
@@ -43,6 +47,11 @@ WallpaperItem {
     // ALL PATHS LOWERCASE FOR LINUX CASE-SENSITIVITY
     property var voiceDatabase: {
         "arona": {
+            "in": [
+                { t: ["Zzz. Strawberry milk... Heeheehee.", "Eat all that? No, I couldn't..."], f: ["Arona/arona_work_sleep_in_1", "Arona/arona_work_sleep_in_2"] },
+                { t: ["Another day means another clear sky.", "Hmm... Maybe it'll rain."], f: ["Arona/arona_work_watch_in_1", "Arona/arona_work_watch_in_2"] },
+                { t: ["Mm-hmm...♬"], f: ["Arona/arona_work_sit_in_1"] }
+            ],
             "idle": [
                 { t: ["Sensei, you're so...", "...Heeheehee.", "Zzz..."], f: ["Arona/arona_work_sleep_talk_1", "Arona/arona_work_sleep_talk_2", "Arona/arona_work_sleep_talk_3"] },
                 { t: ["I wonder what's out there...", "Hmm..."], f: ["Arona/arona_work_watch_talk_1", "Arona/arona_work_watch_talk_3"] },
@@ -65,6 +74,12 @@ WallpaperItem {
             }
         },
         "plana": {
+            "in": [
+                { t: ["So, that's what this is...", "...So that's how it is."], f: ["NP0035/np0035_work_cabinet_in_1", "NP0035/np0035_work_cabinet_in_2"] },
+                { t: ["Mmm...", "Hmm..."], f: ["NP0035/np0035_work_sit_in_1", "NP0035/np0035_work_sit_in_2"] },
+                { t: ["If it rains..."], f: ["NP0035/np0035_work_umbrella_in_1"] },
+                { t: ["Do you mean that, senpai?"], f: ["NP0035/np0035_work_planawatchsky_in_1_2"] }
+            ],
             "idle": [
                 { t: ["Hmm... I see.", "Hmm... So that's how it's structured."], f: ["NP0035/np0035_work_cabinet_talk_1", "NP0035/np0035_work_cabinet_talk_1"] },
                 { t: ["..."], f: ["NP0035/np0035_work_sit_talk_1"] },
@@ -88,6 +103,13 @@ WallpaperItem {
                 e: ["03", "03", "03"]
             }
         }
+    }
+
+    function playSleepIn() {
+        var charKey = root.isArona ? "arona" : "plana"
+        var stateData = root.voiceDatabase[charKey].in[root.startState]
+        var idx = Math.floor(Math.random() * stateData.f.length)
+        playVoice(stateData.f[idx], stateData.t[idx], "")
     }
 
     function playVoice(file, text, expression) {
@@ -326,6 +348,9 @@ WallpaperItem {
             spineCharacter.clearTrack(1)
             spineCharacter.clearTrack(2)
             boneEngine.stop()
+            
+            // Trigger the "In" line as she settles down
+            playSleepIn()
         }
     }
 
