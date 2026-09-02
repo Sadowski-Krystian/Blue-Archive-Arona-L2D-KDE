@@ -19,8 +19,6 @@ WallpaperItem {
     }
 
     property int startState: Math.floor(Math.random() * (isArona ? 3 : 4))
-    
-    // Set this to .mp3 or .ogg depending on your file formats
     property string audioExt: ".ogg"
 
     function getLocalPath(url) { return url.toString().replace("file://", ""); }
@@ -28,13 +26,22 @@ WallpaperItem {
     function getSprName() { return isArona ? "arona_spr" : "NP0035_spr" }
     function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
 
-    // --- Audio System & Database ---
+    function getScreenX(baseX) {
+        var scale = Math.max(root.width / 2880.0, root.height / 1620.0)
+        return (root.width / 2.0) + (baseX - 1440.0) * scale
+    }
+
+    function getScreenY(baseY) {
+        var scale = Math.max(root.width / 2880.0, root.height / 1620.0)
+        return (root.height / 2.0) + (baseY - 810.0) * scale
+    }
+
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
     property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
 
-    Component.onCompleted: {
-        playSleepIn()
-    }
+    // Automatically trigger a full reset when Plasmoid boots OR when character setting changes
+    Component.onCompleted: reloadTimer.start()
+    onIsAronaChanged: reloadTimer.restart()
 
     MediaPlayer {
         id: voicePlayer
@@ -44,9 +51,13 @@ WallpaperItem {
         }
     }
 
-    // ALL PATHS LOWERCASE FOR LINUX CASE-SENSITIVITY
     property var voiceDatabase: {
         "arona": {
+            "pos": [
+                { x: 680, y: 860 },  
+                { x: 1000, y: 350 }, 
+                { x: 750, y: 500 }   
+            ],
             "in": [
                 { t: ["Zzz. Strawberry milk... Heeheehee.", "Eat all that? No, I couldn't..."], f: ["Arona/arona_work_sleep_in_1", "Arona/arona_work_sleep_in_2"] },
                 { t: ["Another day means another clear sky.", "Hmm... Maybe it'll rain."], f: ["Arona/arona_work_watch_in_1", "Arona/arona_work_watch_in_2"] },
@@ -74,6 +85,12 @@ WallpaperItem {
             }
         },
         "plana": {
+            "pos": [
+                { x: 450, y: 300 },  
+                { x: 1100, y: 550 }, 
+                { x: 1200, y: 400 }, 
+                { x: 900, y: 220 }   
+            ],
             "in": [
                 { t: ["So, that's what this is...", "...So that's how it is."], f: ["NP0035/np0035_work_cabinet_in_1", "NP0035/np0035_work_cabinet_in_2"] },
                 { t: ["Mmm...", "Hmm..."], f: ["NP0035/np0035_work_sit_in_1", "NP0035/np0035_work_sit_in_2"] },
@@ -108,22 +125,31 @@ WallpaperItem {
     function playSleepIn() {
         var charKey = root.isArona ? "arona" : "plana"
         var stateData = root.voiceDatabase[charKey].in[root.startState]
+        var statePos = root.voiceDatabase[charKey].pos[root.startState]
         var idx = Math.floor(Math.random() * stateData.f.length)
-        playVoice(stateData.f[idx], stateData.t[idx], "")
+        playVoice(stateData.f[idx], stateData.t[idx], "", statePos.x, statePos.y)
     }
 
-    function playVoice(file, text, expression) {
+    function playVoice(file, text, expression, posX, posY) {
         if (root.audioEnabled) {
             voicePlayer.source = Qt.resolvedUrl("../voice/" + file + root.audioExt)
             voicePlayer.play()
         }
+
+        if (posX !== undefined && posY !== undefined) {
+            dialogBox.x = root.getScreenX(posX)
+            dialogBox.y = root.getScreenY(posY)
+        } else {
+            dialogBox.x = root.getScreenX(1100)
+            dialogBox.y = root.getScreenY(750)
+        }
+
         dialogText.text = text
         dialogBox.opacity = 1
         if (expression !== "") spineCharacter.setTrackAnimation(1, expression, true)
         voiceTimer.restart()
     }
 
-    // --- Bone Tracking States ---
     property int mouseAction: -1 
     property point eyeBase: Qt.point(0, 0)
     property point patBase: Qt.point(0, 0)
@@ -134,16 +160,11 @@ WallpaperItem {
     property real lastMouseX: 0
     property real lastMouseY: 0
 
-    // --- Render Layers ---
     SpineItem {
         id: spineBackground
         anchors.fill: parent
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getBgName() + ".skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getBgName() + ".atlas"))
-        Component.onCompleted: {
-            setTrackAnimation(0, "Idle_background_00", true)
-            setTrackAnimation(1, "Idle_0" + root.startState, true) 
-        }
     }
 
     SpineItem {
@@ -159,7 +180,6 @@ WallpaperItem {
         }
     }
 
-    // --- Dialogue UI ---
     FontLoader {
         id: notoSans
         source: "file://" + root.getLocalPath(Qt.resolvedUrl("../assets/font/NotoSans-Regular.ttf"))
@@ -173,8 +193,6 @@ WallpaperItem {
         border.color: Qt.rgba(1, 1, 1, 0.9)
         border.width: 1
         radius: 10
-        x: (root.width * 0.35) 
-        y: (root.height * 0.6)
         opacity: 0
         Behavior on opacity { NumberAnimation { duration: 500 } }
         
@@ -201,7 +219,6 @@ WallpaperItem {
         }
     }
 
-    // --- Interaction Area ---
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
@@ -211,12 +228,12 @@ WallpaperItem {
             root.curMouseX = mouse.x;  root.curMouseY = mouse.y;
 
             if (!root.alerted && !wakeTimer.running) {
-                // 1. Play startled/exit sequence
                 var charKey = root.isArona ? "arona" : "plana"
                 var stateData = root.voiceDatabase[charKey].exit[root.startState]
+                var statePos = root.voiceDatabase[charKey].pos[root.startState]
                 var idx = Math.floor(Math.random() * stateData.f.length)
                 
-                playVoice(stateData.f[idx], stateData.t[idx], "")
+                playVoice(stateData.f[idx], stateData.t[idx], "", statePos.x, statePos.y)
 
                 spineBackground.setTrackAnimation(2, "Idle_0" + root.startState + "_Touch_M", false)
                 spineBackground.setTrackAnimation(3, "Idle_0" + root.startState + "_Touch_A", false)
@@ -285,18 +302,51 @@ WallpaperItem {
 
     // --- Timers ---
     Timer {
+        id: reloadTimer
+        interval: 100 
+        onTriggered: {
+            root.alerted = false
+            root.mouseAction = -1
+            root.startState = Math.floor(Math.random() * (root.isArona ? 3 : 4))
+            
+            wakeTimer.stop()
+            sleepTimer.stop()
+            voiceTimer.stop()
+            boneEngine.stop()
+            if (voicePlayer.playbackState === MediaPlayer.PlayingState) {
+                voicePlayer.stop()
+            }
+            dialogBox.opacity = 0
+            
+            spineCharacter.clearBonePosition("Touch_Eye")
+            spineCharacter.clearBonePosition("Touch_Point")
+            spineCharacter.clearTrack(0)
+            spineCharacter.clearTrack(1)
+            spineCharacter.clearTrack(2)
+            
+            spineBackground.clearTrack(1)
+            spineBackground.clearTrack(2)
+            spineBackground.clearTrack(3)
+            spineBackground.setTrackAnimation(0, "Idle_background_00", true)
+            spineBackground.setTrackAnimation(1, "Idle_0" + root.startState, true)
+            
+            playSleepIn()
+        }
+    }
+
+    Timer {
         id: idleVoiceTimer
-        interval: 15000 // 15 seconds
+        interval: 15000 
         repeat: true
         running: !root.alerted
         onTriggered: {
-            // Do not overlap playing audio
             if (voicePlayer.playbackState === MediaPlayer.PlayingState) return;
 
             var charKey = root.isArona ? "arona" : "plana"
             var stateData = root.voiceDatabase[charKey].idle[root.startState]
+            var statePos = root.voiceDatabase[charKey].pos[root.startState]
             var idx = Math.floor(Math.random() * stateData.f.length)
-            playVoice(stateData.f[idx], stateData.t[idx], "")
+            playVoice(stateData.f[idx], stateData.t[idx], "", statePos.x, statePos.y)
         }
     }
 
@@ -316,7 +366,6 @@ WallpaperItem {
             root.currentEye = root.eyeBase
             root.currentPat = root.patBase
             
-            // 2. Play greeting/wake sequence
             var charKey = root.isArona ? "arona" : "plana"
             var wakeData = root.voiceDatabase[charKey].wake
             var idx = Math.floor(Math.random() * wakeData.f.length)
@@ -349,12 +398,10 @@ WallpaperItem {
             spineCharacter.clearTrack(2)
             boneEngine.stop()
             
-            // Trigger the "In" line as she settles down
             playSleepIn()
         }
     }
 
-    // --- JS Replicated 60FPS Bone Engine ---
     Timer {
         id: boneEngine
         interval: 20
