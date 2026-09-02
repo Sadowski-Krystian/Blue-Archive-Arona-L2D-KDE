@@ -39,7 +39,6 @@ WallpaperItem {
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
     property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
 
-    // Automatically trigger a full reset when Plasmoid boots OR when character setting changes
     Component.onCompleted: reloadTimer.start()
     onIsAronaChanged: reloadTimer.restart()
 
@@ -48,6 +47,12 @@ WallpaperItem {
         audioOutput: AudioOutput {
             volume: root.audioVolume
             muted: !root.audioEnabled
+        }
+        onMediaStatusChanged: {
+            if (mediaStatus === MediaPlayer.EndOfMedia) {
+                dialogBox.opacity = 0
+                if (root.alerted) spineCharacter.setTrackAnimation(1, "00", true)
+            }
         }
     }
 
@@ -134,6 +139,9 @@ WallpaperItem {
         if (root.audioEnabled) {
             voicePlayer.source = Qt.resolvedUrl("../voice/" + file + root.audioExt)
             voicePlayer.play()
+            voiceTimer.stop()
+        } else {
+            voiceTimer.restart()
         }
 
         if (posX !== undefined && posY !== undefined) {
@@ -147,7 +155,6 @@ WallpaperItem {
         dialogText.text = text
         dialogBox.opacity = 1
         if (expression !== "") spineCharacter.setTrackAnimation(1, expression, true)
-        voiceTimer.restart()
     }
 
     property int mouseAction: -1 
@@ -336,7 +343,7 @@ WallpaperItem {
 
     Timer {
         id: idleVoiceTimer
-        interval: 15000 
+        interval: 60000 
         repeat: true
         running: !root.alerted
         onTriggered: {
@@ -352,7 +359,7 @@ WallpaperItem {
 
     Timer {
         id: wakeTimer
-        interval: 2000 
+        interval: 700 
         onTriggered: {
             spineBackground.clearTrack(1)
             spineBackground.clearTrack(2)
