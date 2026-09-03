@@ -216,6 +216,7 @@ WallpaperItem {
     SpineItem {
         id: spineBackground
         anchors.fill: parent
+        paused: root.isWindowFullscreen
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getBgName() + ".skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getBgName() + ".atlas"))
     }
@@ -225,6 +226,7 @@ WallpaperItem {
         anchors.fill: parent
         opacity: root.alerted ? 1.0 : 0.0 
         visible: opacity > 0
+        paused: root.isWindowFullscreen
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getSprName() + ".skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getSprName() + ".atlas"))
         transform: Translate {

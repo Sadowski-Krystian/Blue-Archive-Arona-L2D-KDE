@@ -16,10 +16,18 @@ class SpineItem : public QQuickItem {
     Q_PROPERTY(QString skelSource READ skelSource WRITE setSkelSource NOTIFY sourceChanged)
     Q_PROPERTY(QString atlasSource READ atlasSource WRITE setAtlasSource NOTIFY sourceChanged)
     Q_PROPERTY(QString animation READ animation WRITE setAnimation NOTIFY animationChanged)
+    Q_PROPERTY(bool paused READ paused WRITE setPaused NOTIFY pausedChanged)
 
 public:
     explicit SpineItem(QQuickItem *parent = nullptr);
     ~SpineItem() override;
+
+    bool paused() const { return m_paused; }
+    void setPaused(bool paused) {
+        if (m_paused == paused) return;
+        m_paused = paused;
+        Q_EMIT pausedChanged();
+    }
 
     QString skelSource() const { return m_skelSource; }
     void setSkelSource(const QString &source);
@@ -44,6 +52,7 @@ public:
 Q_SIGNALS:
     void sourceChanged();
     void animationChanged();
+    void pausedChanged();
 
 protected:
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
@@ -54,6 +63,8 @@ private Q_SLOTS:
 
 private:
     void loadSkeleton();
+
+    bool m_paused = false;
 
     QString m_skelSource;
     QString m_atlasSource;

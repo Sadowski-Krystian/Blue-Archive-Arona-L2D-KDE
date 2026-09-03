@@ -141,6 +141,10 @@ void SpineItem::loadSkeleton() {
 }
 
 void SpineItem::updateAnimation() {
+    if (m_paused) {
+        return; 
+    }
+
     if (!m_skeleton || !m_animationState) return;
 
     float dt = m_timer.restart() / 1000.0f;
