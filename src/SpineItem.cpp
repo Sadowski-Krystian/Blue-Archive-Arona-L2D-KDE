@@ -144,10 +144,16 @@ void SpineItem::updateAnimation() {
     if (m_paused) {
         return; 
     }
-
     if (!m_skeleton || !m_animationState) return;
 
+    // Hard-cap the math calculations to ~30 FPS (33 milliseconds)
+    if (m_timer.elapsed() < 33) {
+        update(); // Tell Qt to keep the loop alive, but skip the heavy CPU math
+        return;
+    }
+
     float dt = m_timer.restart() / 1000.0f;
+    
     m_animationState->update(dt);
     m_animationState->apply(*m_skeleton);
 
@@ -199,11 +205,6 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
     QSGTransformNode* rootNode = static_cast<QSGTransformNode*>(oldNode);
     if (!rootNode) {
         rootNode = new QSGTransformNode();
-    } else {
-        while (QSGNode *child = rootNode->firstChild()) {
-            rootNode->removeChildNode(child);
-            delete child;
-        }
     }
 
     float baseWidth = 2880.0f;
@@ -213,17 +214,14 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
     float scale = std::max(itemW / baseWidth, itemH / baseHeight);
     if (scale <= 0.0f) scale = 1.0f;
 
-    // qWarning() << "[SpineItem] paint: itemW=" << itemW << "itemH=" << itemH
-            //    << "scale=" << scale
-            //    << "windowSize=" << (window() ? window()->size() : QSize())
-            //    << "devicePixelRatio=" << (window() ? window()->devicePixelRatio() : 0.0);
-
     QMatrix4x4 matrix;
     matrix.translate(itemW / 2.0f, itemH / 2.0f);
     matrix.scale(scale, -scale);
     matrix.translate(0.0f, -900.0f);
     rootNode->setMatrix(matrix);
 
+    // 1. Grab the first existing child node to start recycling
+    QSGNode* currentNode = rootNode->firstChild();
 
     auto& drawOrder = m_skeleton->getDrawOrder();
     for (size_t i = 0, n = drawOrder.size(); i < n; ++i) {
@@ -245,9 +243,7 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
             region->computeWorldVertices(slot->getBone(), vertices.buffer(), 0, 2);
             
             uvs.clear();
-            for (size_t v = 0; v < region->getUVs().size(); ++v) {
-                uvs.add(region->getUVs()[v]);
-            }
+            for (size_t v = 0; v < region->getUVs().size(); ++v) uvs.add(region->getUVs()[v]);
             
             indices.clear();
             indices.add(0); indices.add(1); indices.add(2);
@@ -261,24 +257,46 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
             mesh->computeWorldVertices(*slot, 0, mesh->getWorldVerticesLength(), vertices.buffer(), 0, 2);
             
             uvs.clear();
-            for (size_t v = 0; v < mesh->getUVs().size(); ++v) {
-                uvs.add(mesh->getUVs()[v]);
-            }
+            for (size_t v = 0; v < mesh->getUVs().size(); ++v) uvs.add(mesh->getUVs()[v]);
             
             indices.clear();
-            for (size_t v = 0; v < mesh->getTriangles().size(); ++v) {
-                indices.add(mesh->getTriangles()[v]);
-            }
+            for (size_t v = 0; v < mesh->getTriangles().size(); ++v) indices.add(mesh->getTriangles()[v]);
         } else {
             continue;
         }
 
         if (!image || image->isNull()) continue;
 
-        QSGGeometryNode* node = new QSGGeometryNode();
-        QSGGeometry* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), vertices.size() / 2, indices.size());
-        geometry->setDrawingMode(QSGGeometry::DrawTriangles);
+        QSGGeometryNode* node = nullptr;
+        QSGGeometry* geometry = nullptr;
+        QSGTextureMaterial* material = nullptr;
 
+        // 2. Recycle the node if it exists, otherwise create a new one
+        if (currentNode) {
+            node = static_cast<QSGGeometryNode*>(currentNode);
+            geometry = node->geometry();
+            material = static_cast<QSGTextureMaterial*>(node->material());
+            currentNode = currentNode->nextSibling();
+        } else {
+            node = new QSGGeometryNode();
+            node->setFlag(QSGNode::OwnsGeometry);
+            node->setFlag(QSGNode::OwnsMaterial);
+
+            geometry = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 0, 0);
+            geometry->setDrawingMode(QSGGeometry::DrawTriangles);
+            node->setGeometry(geometry);
+
+            material = new QSGTextureMaterial();
+            material->setFlag(QSGMaterial::Blending, true);
+            material->setFiltering(QSGTexture::Linear);
+            node->setMaterial(material);
+
+            rootNode->appendChildNode(node);
+        }
+
+        // 3. Fast allocation: merely resizes the memory buffer without deleting the object
+        geometry->allocate(vertices.size() / 2, indices.size());
+        
         QSGGeometry::TexturedPoint2D* points = geometry->vertexDataAsTexturedPoint2D();
         for (size_t v = 0, pt = 0; v < vertices.size(); v += 2, ++pt) {
             points[pt].set(vertices[v], vertices[v + 1], uvs[v], uvs[v + 1]);
@@ -289,16 +307,11 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
             indexData[ind] = indices[ind];
         }
 
-        node->setGeometry(geometry);
-        node->setFlag(QSGNode::OwnsGeometry);
-
         QSGTexture* texture = m_textures.value(image, nullptr);
         if (!texture) {
-            // Rzutowanie bitowego OR na właściwy enum dla QFlags w Qt 6:
             auto flags = static_cast<QQuickWindow::CreateTextureOption>(
                 QQuickWindow::TextureHasAlphaChannel | QQuickWindow::TextureHasMipmaps
             );
-
             texture = window()->createTextureFromImage(*image, flags);
             texture->setFiltering(QSGTexture::Linear);
             texture->setMipmapFiltering(QSGTexture::Linear);
@@ -307,16 +320,18 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
             m_textures.insert(image, texture);
         }
 
-        QSGTextureMaterial* material = new QSGTextureMaterial();
         material->setTexture(texture);
-        material->setFlag(QSGMaterial::Blending, true); 
 
-        material->setFiltering(QSGTexture::Linear);
-        
-        node->setMaterial(material);
-        node->setFlag(QSGNode::OwnsMaterial);
+        // 4. Critical: Tell the GPU that the data in this recycled node has changed
+        node->markDirty(QSGNode::DirtyGeometry | QSGNode::DirtyMaterial);
+    }
 
-        rootNode->appendChildNode(node);
+    // 5. Clean up any leftover nodes if the new animation frame has fewer slots than the last one
+    while (currentNode) {
+        QSGNode* next = currentNode->nextSibling();
+        rootNode->removeChildNode(currentNode);
+        delete currentNode;
+        currentNode = next;
     }
 
     return rootNode;
