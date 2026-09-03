@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtMultimedia
 import org.kde.plasma.plasmoid
+import org.kde.taskmanager as TaskManager
 import "BlueArchiveSpine"
 
 WallpaperItem {
@@ -34,6 +35,51 @@ WallpaperItem {
     function getScreenY(baseY) {
         var scale = Math.max(root.width / 2880.0, root.height / 1620.0)
         return (root.height / 2.0) + (baseY - 810.0) * scale
+    }
+
+    property bool pauseOnFullscreen: typeof root.configuration !== 'undefined' ? root.configuration.pauseOnFullscreen : true
+    property bool isWindowFullscreen: false
+
+    TaskManager.TasksModel {
+        id: tasksModel
+    }
+
+    Instantiator {
+        id: tasksInstantiator
+        model: root.pauseOnFullscreen ? tasksModel : null
+        delegate: QtObject {
+            property bool isMaxOrFull: (model.IsFullScreen === true || model.isFullScreen === true || 
+                                        model.IsMaximized === true || model.isMaximized === true)
+            property bool isMin: (model.IsMinimized === true || model.isMinimized === true)
+            
+            property bool isCovering: isMaxOrFull && !isMin
+        }
+    }
+
+    Timer {
+        id: windowCheckTimer
+        interval: 1000 
+        repeat: true
+        running: root.pauseOnFullscreen
+        onTriggered: {
+            var found = false;
+            for (var i = 0; i < tasksInstantiator.count; i++) {
+                var obj = tasksInstantiator.objectAt(i);
+                if (obj && obj.isCovering) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (root.isWindowFullscreen !== found) {
+                root.isWindowFullscreen = found;
+                if (found && voicePlayer.playbackState === MediaPlayer.PlayingState) {
+                    voicePlayer.pause();
+                } else if (!found && voicePlayer.playbackState === MediaPlayer.PausedState) {
+                    voicePlayer.play();
+                }
+            }
+        }
     }
 
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
@@ -229,6 +275,7 @@ WallpaperItem {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
+        enabled: !root.isWindowFullscreen
 
         onPressed: (mouse) => {
             if (voicePlayer.playbackState === MediaPlayer.PlayingState || voiceTimer.running) {
@@ -348,7 +395,7 @@ WallpaperItem {
         id: idleVoiceTimer
         interval: 60000 
         repeat: true
-        running: !root.alerted
+        running: !root.alerted && !root.isWindowFullscreen
         onTriggered: {
             if (voicePlayer.playbackState === MediaPlayer.PlayingState) return;
 
@@ -416,6 +463,7 @@ WallpaperItem {
         id: boneEngine
         interval: 20
         repeat: true
+        running: !root.isWindowFullscreen
         onTriggered: {
             if (root.mouseAction === 3) {
                 var adjX = (root.curMouseX / root.width) - 0.25;

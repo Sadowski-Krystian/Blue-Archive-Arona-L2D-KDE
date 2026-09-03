@@ -6,6 +6,7 @@ Kirigami.FormLayout {
     property alias cfg_characterMode: characterComboBox.currentIndex
     property alias cfg_audioEnabled: audioToggle.checked
     property alias cfg_audioVolume: volumeSlider.value
+    property alias cfg_pauseOnFullscreen: pauseToggle.checked
 
     ComboBox {
         id: characterComboBox
@@ -25,5 +26,11 @@ Kirigami.FormLayout {
         from: 0
         to: 100
         stepSize: 1
+    }
+
+    CheckBox {
+        id: pauseToggle
+        Kirigami.FormData.label: "Resource Optimization:"
+        text: "Pause wallpaper when a window is Fullscreen"
     }
 }

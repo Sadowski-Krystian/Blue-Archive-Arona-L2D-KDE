@@ -14,5 +14,8 @@
     <entry name="audioVolume" type="Int">
       <default>50</default>
     </entry>
+    <entry name="pauseOnFullscreen" type="Bool">
+      <default>true</default>
+    </entry>
   </group>
 </kcfg>
