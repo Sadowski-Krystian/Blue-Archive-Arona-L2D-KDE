@@ -231,6 +231,10 @@ WallpaperItem {
         hoverEnabled: true
 
         onPressed: (mouse) => {
+            if (voicePlayer.playbackState === MediaPlayer.PlayingState || voiceTimer.running) {
+                return;
+            }
+
             root.lastMouseX = mouse.x; root.lastMouseY = mouse.y;
             root.curMouseX = mouse.x;  root.curMouseY = mouse.y;
 
@@ -307,7 +311,6 @@ WallpaperItem {
         }
     }
 
-    // --- Timers ---
     Timer {
         id: reloadTimer
         interval: 100 
