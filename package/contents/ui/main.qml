@@ -39,6 +39,14 @@ WallpaperItem {
 
     property bool pauseOnFullscreen: typeof root.configuration !== 'undefined' ? root.configuration.pauseOnFullscreen : true
     property bool isWindowFullscreen: false
+    property bool pendingSleepIn: false
+
+    onIsWindowFullscreenChanged: {
+        if (!isWindowFullscreen && pendingSleepIn) {
+            pendingSleepIn = false
+            playSleepIn()
+        }
+    }
 
     TaskManager.TasksModel {
         id: tasksModel
@@ -280,6 +288,8 @@ WallpaperItem {
         enabled: !root.isWindowFullscreen
 
         onPressed: (mouse) => {
+            root.pendingSleepIn = false;
+            
             if (voicePlayer.playbackState === MediaPlayer.PlayingState || voiceTimer.running) {
                 return;
             }
@@ -367,6 +377,7 @@ WallpaperItem {
             root.alerted = false
             root.mouseAction = -1
             root.startState = Math.floor(Math.random() * (root.isArona ? 3 : 4))
+            root.pendingSleepIn = false
             
             wakeTimer.stop()
             sleepTimer.stop()
@@ -389,7 +400,11 @@ WallpaperItem {
             spineBackground.setTrackAnimation(0, "Idle_background_00", true)
             spineBackground.setTrackAnimation(1, "Idle_0" + root.startState, true)
             
-            playSleepIn()
+            if (root.isWindowFullscreen) {
+                root.pendingSleepIn = true
+            } else {
+                playSleepIn()
+            }
         }
     }
 
@@ -457,7 +472,11 @@ WallpaperItem {
             spineCharacter.clearTrack(2)
             boneEngine.stop()
             
-            playSleepIn()
+            if (root.isWindowFullscreen) {
+                root.pendingSleepIn = true
+            } else {
+                playSleepIn()
+            }
         }
     }
 
