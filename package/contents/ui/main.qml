@@ -92,6 +92,8 @@ WallpaperItem {
 
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
     property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
+    // Safely reads the custom seconds value and converts to milliseconds, defaulting to 60000 (60s)
+    property int idleVoiceIntervalMs: typeof root.configuration !== 'undefined' && root.configuration.idleVoiceInterval !== undefined ? (root.configuration.idleVoiceInterval * 1000) : 60000
 
     Component.onCompleted: reloadTimer.start()
     onIsAronaChanged: reloadTimer.restart()
@@ -410,7 +412,7 @@ WallpaperItem {
 
     Timer {
         id: idleVoiceTimer
-        interval: 60000 
+        interval: root.idleVoiceIntervalMs
         repeat: true
         running: !root.alerted && !root.isWindowFullscreen
         onTriggered: {

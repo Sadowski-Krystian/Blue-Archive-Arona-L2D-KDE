@@ -6,7 +6,9 @@ Kirigami.FormLayout {
     property alias cfg_characterMode: characterComboBox.currentIndex
     property alias cfg_audioEnabled: audioToggle.checked
     property alias cfg_audioVolume: volumeSlider.value
+    property alias cfg_idleVoiceInterval: idleIntervalSpin.value
     property alias cfg_pauseOnFullscreen: pauseToggle.checked
+    
 
     ComboBox {
         id: characterComboBox
@@ -26,6 +28,14 @@ Kirigami.FormLayout {
         from: 0
         to: 100
         stepSize: 1
+    }
+
+    SpinBox {
+        id: idleIntervalSpin
+        Kirigami.FormData.label: "Idle Voice Frequency (seconds):"
+        from: 10
+        to: 3600
+        stepSize: 10
     }
 
     CheckBox {
