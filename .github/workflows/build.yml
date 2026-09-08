@@ -7,7 +7,7 @@ on:
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
-      - 'docs/**'     
+      - 'docs/**'
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -15,14 +15,19 @@ on:
       - 'LICENSE'
       - '.gitignore'
       - 'docs/**'
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   build:
     name: Compile and Package
-    runs-on: ubuntu-26.04 
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:40
 
     steps:
+      - name: Pre-install Git
+        run: dnf install -y git
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -30,10 +35,9 @@ jobs:
 
       - name: Install Build Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake extra-cmake-modules build-essential \
-            qt6-base-dev qt6-declarative-dev qt6-multimedia-dev \
-            libkf6plasma-dev libkf6i18n-dev libkf6coreaddons-dev zip
+          dnf install -y cmake gcc-c++ extra-cmake-modules \
+            qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel \
+            libplasma-devel kf6-ki18n-devel kf6-kcoreaddons-devel zip
 
       - name: Compile C++ Spine Plugin
         run: |
@@ -41,14 +45,13 @@ jobs:
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
-          # CMake automatically copies the plugin into the package folder via POST_BUILD
 
       - name: Create Plasmoid Archive
         run: |
           cd package
           zip -r ../arona-plana-wallpaper.plasmoid ./*
 
-      - name: Upload Artifact (For PR Testing & Manual Downloads)
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: plasmoid-package
