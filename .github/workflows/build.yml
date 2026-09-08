@@ -1,0 +1,78 @@
+name: Build and Release Plasmoid
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'docs/**'     
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'docs/**'
+  workflow_dispatch: 
+
+jobs:
+  build:
+    name: Compile and Package
+    runs-on: ubuntu-24.04 
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake extra-cmake-modules build-essential \
+            qt6-base-dev qt6-declarative-dev qt6-multimedia-dev \
+            libkf6plasma-dev libkf6i18n-dev libkf6coreaddons-dev zip
+
+      - name: Compile C++ Spine Plugin
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          # CMake automatically copies the plugin into the package folder via POST_BUILD
+
+      - name: Create Plasmoid Archive
+        run: |
+          cd package
+          zip -r ../arona-plana-wallpaper.plasmoid ./*
+
+      - name: Upload Artifact (For PR Testing & Manual Downloads)
+        uses: actions/upload-artifact@v4
+        with:
+          name: plasmoid-package
+          path: arona-plana-wallpaper.plasmoid
+
+  release:
+    name: Publish Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: plasmoid-package
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest Main Build"
+          files: arona-plana-wallpaper.plasmoid
+          body: "Automated build of the latest Blue Archive Live2D wallpaper. Download the `.plasmoid` file below to install."
