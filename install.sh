@@ -4,7 +4,7 @@ set -e
 REPO="Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE"
 echo "Fetching latest release of Blue Archive Live2D Wallpaper..."
 
-DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" \
+DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/${REPO}/releases/tag/latest" \
   | grep "browser_download_url.*plasmoid" \
   | cut -d '"' -f 4)
 
