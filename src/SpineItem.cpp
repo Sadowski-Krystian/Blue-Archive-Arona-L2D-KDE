@@ -8,7 +8,6 @@
 #include <QDebug>
 #include <algorithm>
 
-// 1. Texture Loader Bridge (Dynamic absolute paths)
 class QtTextureLoader : public spine::TextureLoader {
 public:
     QString basePath;
@@ -17,13 +16,12 @@ public:
         QFileInfo info(QString::fromUtf8(path.buffer()));
         QString fullPath = QDir(basePath).filePath(info.fileName());
         
-                        // SpineItem.cpp - wewnątrz QtTextureLoader::load
+
         QImage loadedImage(fullPath);
         if (loadedImage.isNull()) {
             qWarning() << "CRITICAL: Image not found at" << fullPath;
         }
 
-        // Konwersja do pre-multiplied alpha poprawia mieszanie krawędzi (brak czarnych obwódek)
         QImage* image = new QImage(loadedImage.convertToFormat(QImage::Format_ARGB32_Premultiplied));
 
 
@@ -146,9 +144,9 @@ void SpineItem::updateAnimation() {
     }
     if (!m_skeleton || !m_animationState) return;
 
-    // Hard-cap the math calculations to ~30 FPS (33 milliseconds)
-    if (m_timer.elapsed() < 33) {
-        update(); // Tell Qt to keep the loop alive, but skip the heavy CPU math
+    
+    if (m_timer.elapsed() < 33) { // change this if you want more FPS: more FPS == more CPU usage
+        update(); 
         return;
     }
 
@@ -157,7 +155,6 @@ void SpineItem::updateAnimation() {
     m_animationState->update(dt);
     m_animationState->apply(*m_skeleton);
 
-    // Inject manual QML bone coordinates before calculating world transforms
     for (auto it = m_overriddenBones.constBegin(); it != m_overriddenBones.constEnd(); ++it) {
         spine::Bone* bone = m_skeleton->findBone(spine::String(it.key().toUtf8().constData()));
         if (bone) {
@@ -220,7 +217,6 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
     matrix.translate(0.0f, -900.0f);
     rootNode->setMatrix(matrix);
 
-    // 1. Grab the first existing child node to start recycling
     QSGNode* currentNode = rootNode->firstChild();
 
     auto& drawOrder = m_skeleton->getDrawOrder();
@@ -271,7 +267,6 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
         QSGGeometry* geometry = nullptr;
         QSGTextureMaterial* material = nullptr;
 
-        // 2. Recycle the node if it exists, otherwise create a new one
         if (currentNode) {
             node = static_cast<QSGGeometryNode*>(currentNode);
             geometry = node->geometry();
@@ -294,7 +289,6 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
             rootNode->appendChildNode(node);
         }
 
-        // 3. Fast allocation: merely resizes the memory buffer without deleting the object
         geometry->allocate(vertices.size() / 2, indices.size());
         
         QSGGeometry::TexturedPoint2D* points = geometry->vertexDataAsTexturedPoint2D();
@@ -322,11 +316,9 @@ QSGNode *SpineItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
 
         material->setTexture(texture);
 
-        // 4. Critical: Tell the GPU that the data in this recycled node has changed
         node->markDirty(QSGNode::DirtyGeometry | QSGNode::DirtyMaterial);
     }
 
-    // 5. Clean up any leftover nodes if the new animation frame has fewer slots than the last one
     while (currentNode) {
         QSGNode* next = currentNode->nextSibling();
         rootNode->removeChildNode(currentNode);

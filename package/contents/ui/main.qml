@@ -41,6 +41,8 @@ WallpaperItem {
     property bool isWindowFullscreen: false
     property bool pendingSleepIn: false
 
+    // fullscreen sleep handle
+
     onIsWindowFullscreenChanged: {
         if (!isWindowFullscreen && pendingSleepIn) {
             pendingSleepIn = false
@@ -98,6 +100,8 @@ WallpaperItem {
     Component.onCompleted: reloadTimer.start()
     onIsAronaChanged: reloadTimer.restart()
 
+    // Playing voice handle
+
     MediaPlayer {
         id: voicePlayer
         audioOutput: AudioOutput {
@@ -111,6 +115,8 @@ WallpaperItem {
             }
         }
     }
+
+    // Dialog and animation dataset
 
     property var voiceDatabase: {
         "arona": {
@@ -223,6 +229,8 @@ WallpaperItem {
     property real lastMouseX: 0
     property real lastMouseY: 0
 
+    // background
+
     SpineItem {
         id: spineBackground
         anchors.fill: parent
@@ -230,6 +238,8 @@ WallpaperItem {
         skelSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getBgName() + ".skel"))
         atlasSource: root.getLocalPath(Qt.resolvedUrl("../assets/" + root.getBgName() + ".atlas"))
     }
+
+    // character - Arona/Plana
 
     SpineItem {
         id: spineCharacter
@@ -245,10 +255,14 @@ WallpaperItem {
         }
     }
 
+    // Dialog Box
+
     FontLoader {
         id: notoSans
         source: "file://" + root.getLocalPath(Qt.resolvedUrl("../assets/font/NotoSans-Regular.ttf"))
     }
+
+
 
     Rectangle {
         id: dialogBox
@@ -283,6 +297,8 @@ WallpaperItem {
             horizontalAlignment: Text.AlignHCenter
         }
     }
+
+    // Click area
 
     MouseArea {
         anchors.fill: parent
@@ -372,6 +388,7 @@ WallpaperItem {
         }
     }
 
+
     Timer {
         id: reloadTimer
         interval: 100 
@@ -410,6 +427,8 @@ WallpaperItem {
         }
     }
 
+    // Sleep Voice Timer
+
     Timer {
         id: idleVoiceTimer
         interval: root.idleVoiceIntervalMs
@@ -425,6 +444,8 @@ WallpaperItem {
             playVoice(stateData.f[idx], stateData.t[idx], "", statePos.x, statePos.y)
         }
     }
+
+    // Wake timer - time to change animation
 
     Timer {
         id: wakeTimer
@@ -451,6 +472,8 @@ WallpaperItem {
         }
     }
 
+    // interaction voice timer
+
     Timer {
         id: voiceTimer
         interval: 4000 
@@ -459,6 +482,8 @@ WallpaperItem {
             if (root.alerted) spineCharacter.setTrackAnimation(1, "00", true) 
         }
     }
+
+    // timer to arona go sleep again
 
     Timer {
         id: sleepTimer
@@ -481,6 +506,8 @@ WallpaperItem {
             }
         }
     }
+
+    // timer for custom bone movment
 
     Timer {
         id: boneEngine
