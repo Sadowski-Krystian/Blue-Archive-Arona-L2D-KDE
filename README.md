@@ -47,7 +47,6 @@ The original source code, scripts, and configuration files of this project are l
 - **Voice Lines:** Official audio clips dynamically synchronized with character actions.
 - **Character Switching:** Seamlessly toggle between **Arona** and **Plana**.
 - **Day & Night Cycles:** Dynamic classroom backgrounds adjusting based on time of day.
-- **Ultra Low Footprint:** Highly optimized memory and near-zero idle CPU usage.
 
 ---
 <p align="right">(<a href="#readme-top">back to top</a>)</p> 
