@@ -1,0 +1,78 @@
+name: Bug Report
+description: File a structured report to help improve the Live2D Wallpaper!
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report an issue! Please fill out this form as accurately as possible so we can diagnose and resolve the problem quickly.
+
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation Method
+      description: How was the wallpaper installed on your system?
+      options:
+        - "Pre-built .plasmoid (Downloaded from GitHub Releases)"
+        - "KDE Store / Plasma 'Get New Plugins' dialog"
+        - "Automated one-liner installation script"
+        - "Compiled manually from source (CMake)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Description of the Bug
+      description: Provide a clear and concise description of what went wrong and what you expected to happen.
+      placeholder: "e.g., When applying the wallpaper, the screen stays black and no character appears..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this behavior?
+      placeholder: |
+        1. Open 'Configure Desktop and Wallpaper...'
+        2. Set Wallpaper Type to 'Blue Archive Live2D Wallpaper'
+        3. Change the Idle Voice Frequency to 120 seconds
+        4. See error / behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: session-type
+    attributes:
+      label: Display Server Session
+      description: Which session type are you currently running?
+      options:
+        - "Wayland"
+        - "X11"
+        - "Not Sure"
+    validations:
+      required: true
+
+  - type: input
+    id: distro-info
+    attributes:
+      label: Linux Distribution & Plasma Version
+      description: What distribution and version of KDE Plasma 6 are you running?
+      placeholder: "e.g., Fedora 40 / Arch Linux, KDE Plasma 6.1.4"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: Screenshots or Terminal Logs
+      description: |
+        Drag and drop screenshots/recordings, or paste terminal logs.
+        Tip: You can grab live Plasmashell logs with:
+        `journalctl -f --user-unit plasma-plasmashell | grep -iE "BlueArchive|qml|plugin"`
+      placeholder: "Attach screenshots or paste output here..."
+    validations:
+      required: false
