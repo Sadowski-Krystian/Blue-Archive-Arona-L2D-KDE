@@ -48,8 +48,18 @@ The original source code, scripts, and configuration files of this project are l
 - **Character Switching:** Seamlessly toggle between **Arona** and **Plana**.
 - **Day & Night Cycles:** Dynamic classroom backgrounds adjusting based on time of day.
 
----
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p> 
+
+---
+
+## Wallpaper Preview
+
+![Project Preview](https://raw.githubusercontent.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/refs/heads/main/readme/arona_preview.webp)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p> 
+
+---
 
 ## 🛠️ Requirements & Dependencies
 
