@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
+      - 'install.sh'
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
@@ -11,6 +12,7 @@ on:
   pull_request:
     branches: [ main ]
     paths-ignore:
+      - 'install.sh'
       - 'README.md'
       - 'LICENSE'
       - '.gitignore'
@@ -49,13 +51,13 @@ jobs:
       - name: Create Plasmoid Archive
         run: |
           cd package
-          zip -r ../arona-plana-wallpaper.plasmoid ./*
+          zip -r ../l2d.arona.plana.bluearchive ./*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: plasmoid-package
-          path: arona-plana-wallpaper.plasmoid
+          path: l2d.arona.plana.bluearchive
 
   release:
     name: Publish Release
@@ -77,5 +79,5 @@ jobs:
         with:
           tag_name: latest
           name: "Latest Main Build"
-          files: arona-plana-wallpaper.plasmoid
+          files: l2d.arona.plana.bluearchive
           body: "Automated build of the latest Blue Archive Live2D wallpaper. Download the `.plasmoid` file below to install."

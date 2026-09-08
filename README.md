@@ -16,7 +16,7 @@
   </a>
 
   <h3 align="center">Blue Archive L2D - Interactive Arona & Plana Wallpaper (KDE Plasma)</h3>
-
+  <h3>Made with 🩵 from Fan to Fans</h3> 
   <p align="center">
     A lightweight, native Qt Quick (C++ / Spine 2D) interactive wallpaper for KDE Plasma featuring Arona and Plana with in-game animations, touch reactions, and voice lines.
     <br />
@@ -54,15 +54,77 @@ The original source code, scripts, and configuration files of this project are l
 
 ## 🛠️ Requirements & Dependencies
 
-soon
+This wallpaper requires **KDE Plasma 6** and **Qt 6 Multimedia** (including GStreamer audio codecs for `.ogg` voice lines).
+
+### Runtime Dependencies (Pre-built `.plasmoid`)
+
+If you are using the pre-built release, you only need the runtime packages for your distribution:
+
+* **Arch Linux / Manjaro:**
+  ```bash
+  sudo pacman -S qt6-multimedia gstreamer gst-plugins-good gst-plugins-bad
+  ```
+* **Fedora / RHEL (Fedora 40+):**
+  ```bash
+  sudo dnf install qt6-qtmultimedia gstreamer1-plugins-good gstreamer1-plugins-bad-free
+  ```
+* **openSUSE Tumbleweed:**
+  ```bash
+  sudo zypper install qt6-multimedia gstreamer-plugins-good gstreamer-plugins-bad
+  ```
+* **KDE Neon / Kubuntu (Plasma 6+):**
+  ```bash
+  sudo apt install qml6-module-qtmultimedia libqt6multimedia6 gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+  ```
+
+
+### Build Dependencies (Compiling from Source)
+
+If you intend to build the C++ plugin yourself instead of using the pre-built `.plasmoid`:
+
+* **Arch Linux:**
+  ```bash
+  sudo pacman -S base-devel cmake extra-cmake-modules qt6-base qt6-declarative qt6-multimedia libplasma
+  ```
+* **Fedora:**
+  ```bash
+  sudo dnf install cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel libplasma-devel kf6-ki18n-devel kf6-kcoreaddons-devel
+  ```
+* **openSUSE Tumbleweed:**
+  ```bash
+  sudo zypper install cmake gcc-c++ extra-cmake-modules qt6-base-devel qt6-declarative-devel qt6-multimedia-devel libplasma-devel
+  ```
+
+
+If there is problem with any package please open a <a href="https://github.com/Sadowski-Krystian/Blue-Archive-Arona-Wallpaper-KDE/issues">Report Bug</a>
 
 ---
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p> 
 
-## 🔨 Building & Installation
+## 🔨 Installation
 
-soon
+### Method 1: Installation script
+
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/refs/heads/main/install.sh | bash
+```
+
+Remember to change your desktop `Layout` from `Folder View` to `Desktop`
+
+### Method 2: Manual Install via Terminal
+
+1. Download `l2d.arona.plana.bluearchive.plasmoid` from the <a href="https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/releases/tag/latest">release</a> tab.
+2. Open your terminal in your `Downloads` directory and run:
+```bash
+kpackagetool6 --type Plasma/Wallpaper --install l2d.arona.plana.bluearchive.plasmoid
+```
+*(If updating from an earlier version, use `--upgrade` instead of `--install`).*
+
+3. Change in your wallpaper settings from image to `Blue Archive Interactive Arona Wallpaper L2D` 
+  
+  Remember to change your desktop `Layout` from `Folder View` to `Desktop`
 
 ---
 
@@ -82,13 +144,13 @@ soon
 
 <!-- CHANGE ALL WHEN PUBLISHED -->
 <!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE.svg?style=for-the-badge
 [contributors-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE.svg?style=for-the-badge
 [forks-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/network/members
-[stars-shield]: https://img.shields.io/github/stars/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE.svg?style=for-the-badge
 [stars-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE.svg?style=for-the-badge
 [issues-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/issues
 [license-shield]: https://img.shields.io/badge/License-GPL_3.0-blue.svg?style=for-the-badge
 [license-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/blob/main/LICENSE
