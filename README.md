@@ -10,7 +10,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma">
+  <a href="https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE">
     <!-- Jeśli masz logo, podmień link niżej. Jeśli nie, możesz na razie usunąć ten tag <img> -->
     <!-- <img src="images/logo.png" alt="Logo" width="80" height="80"> -->
   </a>
@@ -30,7 +30,7 @@
 <div align="center">
   <!-- Replace '@Sadowski-Krystian-Blue-Archive-Wallpaper' after registering on count.getloli.com -->
   <a href="https://count.getloli.com/">
-    <img src="https://count.getloli.com/@Sadowski-Krystian-Blue-Archive-Wallpaper?name=Sadowski-Krystian-Blue-Archive-Wallpaper&theme=original-new&padding=7&offset=0&align=center&scale=1&pixelated=1&darkmode=0" height="100" alt="Moe Counter">
+    <img src="https://count.getloli.com/@Blue-Archive-Arona-L2D-KDE?name=Blue-Archive-Arona-L2D-KDE&theme=original-new&padding=7&offset=0&align=center&scale=1&pixelated=1&darkmode=0" height="100" alt="Moe Counter">
   </a>
 </div>
 
@@ -54,26 +54,7 @@ The original source code, scripts, and configuration files of this project are l
 
 ## 🛠️ Requirements & Dependencies
 
-### Fedora / Bazzite / RHEL
-```bash
-sudo dnf install -y gcc-c++ cmake extra-cmake-modules \
-    qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel \
-    kf6-plasma-devel kf6-kcoreaddons-devel
-```
-
-### Arch Linux / Manjaro
-```bash
-sudo pacman -S --needed base-devel cmake extra-cmake-modules \
-    qt6-base qt6-declarative qt6-multimedia \
-    plasma-workspace kcoreaddons
-```
-
-### Ubuntu / Debian / KDE Neon
-```bash
-sudo apt install -y build-essential cmake extra-cmake-modules \
-    qt6-base-dev qt6-declarative-dev qt6-multimedia-dev \
-    libkf6plasma-dev libkf6coreaddons-dev
-```
+soon
 
 ---
 
@@ -81,30 +62,7 @@ sudo apt install -y build-essential cmake extra-cmake-modules \
 
 ## 🔨 Building & Installation
 
-### 1. Clone the repository with submodules
-```bash
-git clone --recursive add when published
-cd Blue-Archive-Arona-Wallpaper-KDE
-```
-
-### 2. Build and install the plugin
-
-```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-sudo cmake --install build
-```
-
-### 3. Link/Install the Plasma Wallpaper Package
-```bash
-mkdir -p ~/.local/share/plasma/wallpapers/
-ln -sf "$PWD/package" ~/.local/share/plasma/wallpapers/org.kde.plasma.bluearchive.arona
-```
-
-### 4. Activate the Wallpaper
-
-1. Right-click your desktop $\rightarrow$ Configure Desktop and Wallpaper...
-2. In Wallpaper Type, select Blue Archive Interactive Arona.
+soon
 
 ---
 
@@ -125,26 +83,16 @@ ln -sf "$PWD/package" ~/.local/share/plasma/wallpapers/org.kde.plasma.bluearchiv
 <!-- CHANGE ALL WHEN PUBLISHED -->
 <!-- MARKDOWN LINKS & IMAGES -->
 [contributors-shield]: https://img.shields.io/github/contributors/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
-[contributors-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma/graphs/contributors
+[contributors-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
-[forks-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma/network/members
+[forks-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/network/members
 [stars-shield]: https://img.shields.io/github/stars/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
-[stars-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma/stargazers
+[stars-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/stargazers
 [issues-shield]: https://img.shields.io/github/issues/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma.svg?style=for-the-badge
-[issues-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma/issues
+[issues-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/issues
 [license-shield]: https://img.shields.io/badge/License-GPL_3.0-blue.svg?style=for-the-badge
-[license-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Theme-KDE-Plasma/blob/main/LICENSE
+[license-url]: https://github.com/Sadowski-Krystian/Blue-Archive-Arona-L2D-KDE/blob/main/LICENSE
 
 <!-- Badges dla technologii -->
 [KDE-shield]: https://img.shields.io/badge/KDE-%231D99F3.svg?style=for-the-badge&logo=kde&logoColor=white
 [KDE-url]: https://kde.org/
-
-<!-- Copyrights -->
-
-[COPYRIGHT-LOCK-ARTIST]: https://www.pixiv.net/en/users/16710545
-[COPYRIGHT-LOCK-SOURCE]: https://www.pixiv.net/en/artworks/115226775
-[COPYRIGHT-DESKTOP-ARTIST]: https://www.pixiv.net/en/users/72896190
-[COPYRIGHT-DESKTOP-SOURCE]: https://www.pixiv.net/en/artworks/111576669
-[STEAM-STARTUP]: https://shared.fastly.steamstatic.com/community_assets/images/items/3557620/5/movie_large/7b6e3a5b503f415b6323e4295edfb645.webm
-[ARONA-SPLASH]: https://github.com/Machillka/arona-splash-theme
-[PLYMOUTH-WALLPAPER]: https://moewalls.com/anime/arona-in-classroom-blue-archive-live-wallpaper/
