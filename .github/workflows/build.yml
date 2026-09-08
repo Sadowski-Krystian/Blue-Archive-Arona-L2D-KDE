@@ -51,13 +51,13 @@ jobs:
       - name: Create Plasmoid Archive
         run: |
           cd package
-          zip -r ../l2d.arona.plana.bluearchive ./*
+          zip -r ../l2d.arona.plana.bluearchive.plasmoid ./*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: plasmoid-package
-          path: l2d.arona.plana.bluearchive
+          path: l2d.arona.plana.bluearchive.plasmoid
 
   release:
     name: Publish Release
@@ -79,5 +79,5 @@ jobs:
         with:
           tag_name: latest
           name: "Latest Main Build"
-          files: l2d.arona.plana.bluearchive
+          files: l2d.arona.plana.bluearchive.plasmoid
           body: "Automated build of the latest Blue Archive Live2D wallpaper. Download the `.plasmoid` file below to install."
