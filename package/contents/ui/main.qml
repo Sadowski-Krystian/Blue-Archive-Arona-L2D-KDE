@@ -37,6 +37,7 @@ WallpaperItem {
         return (root.height / 2.0) + (baseY - 810.0) * scale
     }
 
+    property bool pauseOnAllMonitors: typeof root.configuration !== 'undefined' ? root.configuration.pauseOnAllMonitors : false
     property bool pauseOnFullscreen: typeof root.configuration !== 'undefined' ? root.configuration.pauseOnFullscreen : true
     property bool isWindowFullscreen: false
     property bool pendingSleepIn: false
@@ -53,7 +54,7 @@ WallpaperItem {
     TaskManager.TasksModel {
         id: tasksModel
 
-        filterByScreen: true
+        filterByScreen: !root.pauseOnAllMonitors
         screenGeometry: Qt.rect(root.Screen.virtualX,
                                 root.Screen.virtualY,
                                 root.Screen.width,
