@@ -26,6 +26,8 @@ public:
     void setPaused(bool paused) {
         if (m_paused == paused) return;
         m_paused = paused;
+        m_timer.restart(); 
+        update();
         Q_EMIT pausedChanged();
     }
 
@@ -63,6 +65,8 @@ private Q_SLOTS:
 
 private:
     void loadSkeleton();
+
+    bool m_forceFrame = false;
 
     bool m_paused = false;
 

@@ -83,6 +83,8 @@ void SpineItem::setAnimation(const QString &animationName) {
     if (m_animationState && !m_animation.isEmpty()) {
         m_animationState->setAnimation(0, spine::String(m_animation.toUtf8().constData()), true);
     }
+    m_forceFrame = true;
+    update();
     Q_EMIT animationChanged();
 }
 
@@ -90,18 +92,24 @@ void SpineItem::setTrackAnimation(int track, const QString &animationName, bool 
     if (m_animationState && !animationName.isEmpty()) {
         m_animationState->setAnimation(track, spine::String(animationName.toUtf8().constData()), loop);
     }
+    m_forceFrame = true;
+    update();
 }
 
 void SpineItem::addTrackAnimation(int track, const QString &animationName, bool loop, float delay) {
     if (m_animationState && !animationName.isEmpty()) {
         m_animationState->addAnimation(track, spine::String(animationName.toUtf8().constData()), loop, delay);
     }
+    m_forceFrame = true;
+    update();
 }
 
 void SpineItem::clearTrack(int track) {
     if (m_animationState) {
         m_animationState->setEmptyAnimation(track, 0.0f);
     }
+    m_forceFrame = true;
+    update();
 }
 
 void SpineItem::loadSkeleton() {
@@ -136,22 +144,28 @@ void SpineItem::loadSkeleton() {
     if (!m_animation.isEmpty()) {
         setAnimation(m_animation);
     }
+
+    m_skeleton->setToSetupPose();
+    m_skeleton->updateWorldTransform();
+    m_forceFrame = true;
+    update();
 }
 
 void SpineItem::updateAnimation() {
-    if (m_paused) {
-        return; 
-    }
     if (!m_skeleton || !m_animationState) return;
 
-    
-    if (m_timer.elapsed() < 33) { // change this if you want more FPS: more FPS == more CPU usage
-        update(); 
+    const bool force = m_forceFrame;
+    if (m_paused && !force) return;
+
+    if (!force && m_timer.elapsed() < 33) {
+        update();
         return;
     }
 
+    m_forceFrame = false;
     float dt = m_timer.restart() / 1000.0f;
-    
+    if (m_paused) dt = 0.0f;  
+
     m_animationState->update(dt);
     m_animationState->apply(*m_skeleton);
 

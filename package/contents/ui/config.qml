@@ -8,6 +8,7 @@ Kirigami.FormLayout {
     property alias cfg_audioVolume: volumeSlider.value
     property alias cfg_idleVoiceInterval: idleIntervalSpin.value
     property alias cfg_pauseOnFullscreen: pauseToggle.checked
+    property alias cfg_pauseOnAllMonitors: pauseAllToggle.checked
     
 
     ComboBox {
@@ -42,5 +43,12 @@ Kirigami.FormLayout {
         id: pauseToggle
         Kirigami.FormData.label: "Resource Optimization:"
         text: "Pause wallpaper when a window is Fullscreen"
+    }
+
+    CheckBox {
+        id: pauseAllToggle
+        Kirigami.FormData.label: "Low-end PC mode:"
+        text: "Pause on every monitor when any window is Fullscreen"
+        enabled: pauseToggle.checked
     }
 }

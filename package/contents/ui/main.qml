@@ -37,6 +37,7 @@ WallpaperItem {
         return (root.height / 2.0) + (baseY - 810.0) * scale
     }
 
+    property bool pauseOnAllMonitors: typeof root.configuration !== 'undefined' ? root.configuration.pauseOnAllMonitors : false
     property bool pauseOnFullscreen: typeof root.configuration !== 'undefined' ? root.configuration.pauseOnFullscreen : true
     property bool isWindowFullscreen: false
     property bool pendingSleepIn: false
@@ -44,14 +45,21 @@ WallpaperItem {
     // fullscreen sleep handle
 
     onIsWindowFullscreenChanged: {
-        if (!isWindowFullscreen && pendingSleepIn) {
-            pendingSleepIn = false
-            playSleepIn()
-        }
+    if (!isWindowFullscreen && pendingSleepIn
+            && voicePlayer.playbackState !== MediaPlayer.PlayingState) {
+        pendingSleepIn = false
+        playSleepIn()
     }
+}
 
     TaskManager.TasksModel {
         id: tasksModel
+
+        filterByScreen: !root.pauseOnAllMonitors
+        screenGeometry: Qt.rect(root.Screen.virtualX,
+                                root.Screen.virtualY,
+                                root.Screen.width,
+                                root.Screen.height)
     }
 
     Instantiator {
@@ -67,30 +75,25 @@ WallpaperItem {
     }
 
     Timer {
-        id: windowCheckTimer
-        interval: 1000 
-        repeat: true
-        running: root.pauseOnFullscreen
-        onTriggered: {
-            var found = false;
-            for (var i = 0; i < tasksInstantiator.count; i++) {
-                var obj = tasksInstantiator.objectAt(i);
-                if (obj && obj.isCovering) {
-                    found = true;
-                    break;
-                }
-            }
-            
-            if (root.isWindowFullscreen !== found) {
-                root.isWindowFullscreen = found;
-                if (found && voicePlayer.playbackState === MediaPlayer.PlayingState) {
-                    voicePlayer.pause();
-                } else if (!found && voicePlayer.playbackState === MediaPlayer.PausedState) {
-                    voicePlayer.play();
-                }
+    id: windowCheckTimer
+    interval: 1000 
+    repeat: true
+    running: root.pauseOnFullscreen
+    onTriggered: {
+        var found = false;
+        for (var i = 0; i < tasksInstantiator.count; i++) {
+            var obj = tasksInstantiator.objectAt(i);
+            if (obj && obj.isCovering) {
+                found = true;
+                break;
             }
         }
+
+        if (root.isWindowFullscreen !== found) {
+            root.isWindowFullscreen = found;
+        }
     }
+}
 
     property bool audioEnabled: typeof root.configuration !== 'undefined' ? root.configuration.audioEnabled : true
     property real audioVolume: typeof root.configuration !== 'undefined' ? root.configuration.audioVolume / 100.0 : 0.5
@@ -103,18 +106,23 @@ WallpaperItem {
     // Playing voice handle
 
     MediaPlayer {
-        id: voicePlayer
-        audioOutput: AudioOutput {
-            volume: root.audioVolume
-            muted: !root.audioEnabled
-        }
-        onMediaStatusChanged: {
-            if (mediaStatus === MediaPlayer.EndOfMedia) {
-                dialogBox.opacity = 0
-                if (root.alerted) spineCharacter.setTrackAnimation(1, "00", true)
+    id: voicePlayer
+    audioOutput: AudioOutput {
+        volume: root.audioVolume
+        muted: !root.audioEnabled
+    }
+    onMediaStatusChanged: {
+        if (mediaStatus === MediaPlayer.EndOfMedia) {
+            dialogBox.opacity = 0
+            if (root.alerted) spineCharacter.setTrackAnimation(1, "00", true)
+
+            if (root.pendingSleepIn && !root.isWindowFullscreen) {
+                root.pendingSleepIn = false
+                Qt.callLater(root.playSleepIn)
             }
         }
     }
+}
 
     // Dialog and animation dataset
 
@@ -493,13 +501,13 @@ WallpaperItem {
             root.startState = Math.floor(Math.random() * (root.isArona ? 3 : 4))
             spineBackground.setTrackAnimation(0, "Idle_background_00", true)
             spineBackground.setTrackAnimation(1, "Idle_0" + root.startState, true)
-            
+
             spineCharacter.clearTrack(0)
             spineCharacter.clearTrack(1)
             spineCharacter.clearTrack(2)
             boneEngine.stop()
-            
-            if (root.isWindowFullscreen) {
+
+            if (root.isWindowFullscreen || voicePlayer.playbackState === MediaPlayer.PlayingState) {
                 root.pendingSleepIn = true
             } else {
                 playSleepIn()
