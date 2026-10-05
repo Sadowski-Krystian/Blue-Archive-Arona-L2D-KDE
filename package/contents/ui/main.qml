@@ -52,6 +52,12 @@ WallpaperItem {
 
     TaskManager.TasksModel {
         id: tasksModel
+
+        filterByScreen: true
+        screenGeometry: Qt.rect(root.Screen.virtualX,
+                                root.Screen.virtualY,
+                                root.Screen.width,
+                                root.Screen.height)
     }
 
     Instantiator {
