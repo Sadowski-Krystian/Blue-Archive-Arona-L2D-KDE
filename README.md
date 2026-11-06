@@ -97,12 +97,20 @@ If you intend to build the C++ plugin yourself instead of using the pre-built `.
   ```
 * **Fedora:**
   ```bash
-  sudo dnf install cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel libplasma-devel kf6-ki18n-devel kf6-kcoreaddons-devel
+  sudo dnf install cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel libplasma-devel kf6-ki18n-devel kf6-kcoreaddons-devel kf6-kconfig-devel
   ```
 * **openSUSE Tumbleweed:**
   ```bash
   sudo zypper install cmake gcc-c++ extra-cmake-modules qt6-base-devel qt6-declarative-devel qt6-multimedia-devel libplasma-devel
   ```
+
+### Build
+
+```bash
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+```
 
 
 If there is problem with any package please open a <a href="https://github.com/Sadowski-Krystian/Blue-Archive-Arona-Wallpaper-KDE/issues">Report Bug</a>
