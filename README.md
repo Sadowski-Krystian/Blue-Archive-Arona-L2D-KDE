@@ -97,7 +97,7 @@ If you intend to build the C++ plugin yourself instead of using the pre-built `.
   ```
 * **Fedora:**
   ```bash
-  sudo dnf install cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel libplasma-devel kf6-ki18n-devel kf6-kcoreaddons-devel
+  sudo dnf install cmake gcc-c++ extra-cmake-modules qt6-qtbase-devel qt6-qtdeclarative-devel qt6-qtmultimedia-devel libplasma-devel kf6-ki18n-devel kf6-kcoreaddons-devel kf6-kconfig-devel
   ```
 * **openSUSE Tumbleweed:**
   ```bash
