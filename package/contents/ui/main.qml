@@ -103,6 +103,17 @@ WallpaperItem {
     Component.onCompleted: reloadTimer.start()
     onIsAronaChanged: reloadTimer.restart()
 
+    Timer {
+        id: clockTimer
+        interval: 30000
+        repeat: true
+        running: true
+        onTriggered: {
+            var h = new Date().getHours()
+            if (root.currentHour !== h) root.currentHour = h
+        }
+    }
+
     // Playing voice handle
 
     MediaPlayer {
