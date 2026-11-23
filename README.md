@@ -40,6 +40,8 @@
 
 The original source code, scripts, and configuration files of this project are licensed under the GNU General Public License v3.0 (GPL-3.0). See the LICENSE file for details. This licence is not applied to [Intellectual Property & Exceptions](#intellectual-property--exceptions)
 
+> [!NOTE]
+> Clicks don't work on Plasma 6.8.3 with the "Desktop" layout (a Plasma regression). Bug report pending: [KDE Bug 529306](https://bugs.kde.org/show_bug.cgi?id=529306). Works on 6.8.2.
 ## 🌟 Features
 
 - **Native C++ & Qt Quick Renderer:** Hardware-accelerated Spine 2D rendering directly on KDE Plasma's scene graph without heavy web-engine overhead.
